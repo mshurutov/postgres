@@ -1,0 +1,29 @@
+---
+
+# init postgresql on gentoo linux
+- name: configure and init instance 
+  block:
+    - name: "edit /etc/conf.d/postgresql-{{ PG_MAJOR_VERSION }}"
+      ansible.builtin.lineinfile:
+        path: "/etc/conf.d/postgresql-{{ PG_MAJOR_VERSION }}"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      loop: "{{ postgres_portage_confd }}"
+    - name: initdb of package postgresql
+      ansible.builtin.shell: "emerge --config dev-db/postgresql:{{ PG_MAJOR_VERSION }}"
+    - name: configure systemd unit for postgres
+      ansible.builtin.blockinfile:
+        path: "/etc/systemd/system/postgresql-{{ PG_MAJOR_VERSION }}.service.d/override.conf"
+        block: |
+          [Service]
+          
+          Environment=PGPORT=5432
+          Environment=PGDATA=/etc/postgresql/14
+          Environment=DATA_DIR=/var/lib/postgresql/14/data
+          
+          StandardOutput=syslog
+    - name: systemd reload unit files
+      ansible.builtin.systemd:
+        daemon_reload: yes
+  tags: postgres_gentoo_init

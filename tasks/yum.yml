@@ -1,0 +1,18 @@
+---
+
+# install postgres into redhat and its children distros (CentOS, Rocky, Oracle)
+- name: upgrade minor system version before install postgres
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
+  
+- name: install repo
+  ansible.builtin.yum:
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    state: present
+
+- name: install postgres
+  ansible.builtin.yum:
+    name: "{{ postgres_yum_packages }}"
+    state: present
+

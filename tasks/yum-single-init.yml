@@ -1,0 +1,11 @@
+---
+
+# postgres init on old RedHat-based distros
+- name: postgres init on old RedHat-based distros
+  ansible.builtin.command:
+    argv:
+      - /usr/pgsql-{{ postgres_major_version }}/bin/postgresql-{{ postgres_major_version }}-setup
+      - initdb
+  environment:
+    PGSETUP_INITDB_OPTIONS: "{{ postgres_init_options }}"
+  

@@ -1,0 +1,27 @@
+---
+
+# handlers file for postgres
+# start instance
+- name: postgres start
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: started
+
+# restart instance
+- name: postgres restart
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: restarted
+
+# reload config
+- name: postgres reload conf
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: reloaded
+
+# stop instance
+- name: postgres stop
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: stopped
+

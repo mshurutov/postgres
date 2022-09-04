@@ -1,0 +1,82 @@
+---
+
+# defaults file for postgres
+# common variable for role
+postgres_major_version: 14
+postgres_service_name: "postgresql-{{ postgres_major_version }}"
+postgres_install_mode: "single"
+postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/"
+postgres_data_dir: "/var/lib/postgresql/{{ postgres_major_version }}/data"
+postgres_init_options: "--auth-host=scram-sha-256 --auth-local=peer --data-checksums"
+postgres_password_encoding: "scram-sha-256"
+postgres_params:
+  - { name: listen_addresses, value: "'*'" }
+  - { name: port, value: "5432" }
+  - { name: max_connections, value: "100" }
+  - { name: password_encryption, value: "{{ postgres_password_encoding }}"}
+  - { name: shared_buffers , value: "{{ (ansible_memtotal_mb/1024+1) | int }}GB" }
+  - { name: work_mem , value: "16MB" }
+  - { name: maintenance_work_mem, value: "1GB" }
+  - { name: wal_level, value: "replica" }
+  - { name: archive_mode, value: "on" }
+  - { name: archive_command, value: "/bin/true" }
+  - { name: max_wal_senders, value: "10" }
+  - { name: max_replication_slots, value: "10" }
+  - { name: hot_standby, value: "on" }
+  - { name: max_logical_replication_workers, value: "5" }
+  - { name: log_destination, value: "'stderr'" }
+  - { name: logging_collector, value: "on" }
+  - { name: log_file_mode, value: "640" }
+  - { name: log_min_duration_statement, value: "0" }
+  - { name: log_duration, value: "on" }
+  - { name: log_line_prefix, value: "'%t [%p]: user=%u,db=%d,app=%a,client=%h '" }
+  - { name: log_statement, value: "all" }
+  - { name: autovacuum_vacuum_scale_factor, value: "0.05" }
+  - { name: autovacuum_vacuum_insert_scale_factor, value: "0.01" }
+  - { name: autovacuum_analyze_scale_factor, value: "0.01" }
+  - { name: shared_preload_libraries, value: "pg_stat_statements" }
+postgres_pg_hba_lines:
+  - local	all				postgres								peer
+  - host	all				all				127.0.0.1/32			md5
+  - host	all				all				::1/128					md5
+  - host	all				postgres		0.0.0.1/0				reject
+  - host	replication		repluser		samenet					md5
+  - host	all				all				samenet					md5
+
+# distr dependent variables
+# portage - gentoo linux
+portage_accept_keywords_file: "/etc/portage/package.accept_keywords/package.all"
+postgres_portage_packages: "dev-db/postgresql:{{ postgres_major_version }}"
+postgres_portage_confd:
+  - regexp: '^PGDATA="/etc/postgresq.*'
+    line: 'PGDATA="{{ postgres_conf_dir }}"'
+  - regexp: '^PG_INITDB_OPTS=.*'
+    line: 'PG_INITDB_OPTS="--encoding=UTF8 {{ postgres_init_options }}"'
+
+# APT variables (Debian, [KLX]?Ubuntu, Mint, and other deb-based distros)
+postgres_apt_packages:
+  - "postgresql-{{ postgres_major_version }}"
+  - "postgresql-contrib-{{ postgres_major_version }}"
+postgres_apt_cluster_name: "main"
+postgres_apt_home_dir: /var/lib/postgres
+patroni_apt_packages:
+  - "python3-psycopg2"
+  - "patroni"
+
+# YUM/DNF (RedHat, CentOS, Rocky, Oracle)
+postgres_yum_packages:
+ - "postgresql{{ postgres_major_version }}-server"
+ - "postgresql{{ postgres_major_version }}-contrib"
+postgres_yum_home_dir: /var/lib/pgsql
+patroni_yum_packages:
+  - "python3-psycopg2"
+  - "patroni"
+  - "patroni-etcd"
+
+# Cluster dependent variables
+# patroni
+patroni_scope_name: 'example'
+patroni_user: 'postgres'
+patroni_group: "{{ patroni_user }}"
+patroni_config_dir: '/etc/patroni'
+patroni_config_file: '{{ patroni_config_dir }}/patroni.yml'

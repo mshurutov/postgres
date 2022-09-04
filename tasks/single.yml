@@ -1,0 +1,30 @@
+---
+
+- name: init postgres
+  ansible.builtin.import_tasks: "{{ ansible_pkg_mgr }}-{{ postgres_install_mode }}-init.yml"
+  tags: postgres_init
+
+- name: edit configs
+  block:
+    - name: edit postgresql.conf
+      ansible.builtin.lineinfile:
+        path: "{{ postgres_conf_dir }}/postgresql.conf"
+        regexp: '^#?\s*{{ item.name }}.*(\s*#.*)?$'
+        line: '{{ item.name }} = {{ item.value }}\1'
+        state: present
+        backrefs: yes
+      loop: "{{ postgres_params }}"
+    - name: delete all presettings in pg_hba.conf
+      ansible.builtin.lineinfile:
+        path: "{{ postgres_conf_dir }}/pg_hba.conf"
+        regexp: '^(local|host).*$'
+        state: absent
+    - name: add prepared lines into pg_hba.conf
+      ansible.builtin.lineinfile:
+        path: "{{ postgres_conf_dir }}/pg_hba.conf"
+        line: "{{ item }}"
+        state: present
+        insertafter: EOF
+      loop: "{{ postgres_pg_hba_lines }}"
+      notify: postgres start
+  tags: postgres_config,postgres_start

@@ -1,0 +1,7 @@
+---
+
+# install patroni on new RH-based distros
+- name: install patroni on new RH-based distros
+  ansible.builtin.dnf:
+    name: "{{ patroni_yum_packages }}"
+    state: present

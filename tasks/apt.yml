@@ -1,0 +1,32 @@
+---
+
+# install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
+- name: add pgdg repo into apt
+  block:
+    - name: install lsb-release package
+      ansible.builtin.apt:
+        name: lsb-release
+        state: present
+    - name: get release name
+      ansible.builtin.command: lsb_release -cs
+      register: os_release
+    - name: add pgdg repo gpg key
+      ansible.builtin.apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+    - name: add repo into config file
+      ansible.builtin.template:
+        src: "{{ postgres_templates_apt_dir }}/pgdg.list.j2"
+        dest: /etc/apt/sources.list.d/pgdg.list
+    - name: update package cache
+      ansible.builtin.apt:
+        update_cache: yes
+  tags: postgres_apt_init
+
+- name: install needed packages
+  ansible.builtin.apt:
+    name: "{{ postgres_apt_packages }}"
+    state: present
+
+- name: remove created cluster
+  ansible.builtin.command: "pg_dropcluster --stop {{ PG_MAJOR_VERSION }} {{ postgres_apt_cluster_name }}"

@@ -1,0 +1,8 @@
+---
+
+# Install patroni packages on  DEB-based distros
+- name: Install patroni packages on  DEB-based distros
+  ansible.builtin.apt:
+    name: "{{ patroni_apt_packages }}"
+    state: present
+  
