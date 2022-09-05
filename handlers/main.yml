@@ -1,27 +1,53 @@
 ---
 
 # handlers file for postgres
-# start instance
+# single instance
+# start postgres instance
 - name: postgres start
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: started
 
-# restart instance
+# restart postgres instance
 - name: postgres restart
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: restarted
 
-# reload config
+# reload postgres config
 - name: postgres reload conf
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: reloaded
 
-# stop instance
+# stop postgres instance
 - name: postgres stop
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
+    state: stopped
+
+# patroni cluster solution
+# start patroni instance
+- name: patroni start
+  ansible.builtin.service:
+    name: patroni
+    state: started
+
+# restart patroni instance
+- name: patroni restart
+  ansible.builtin.service:
+    name: patroni
+    state: restarted
+
+# reload patroni config
+- name: patroni reload conf
+  ansible.builtin.service:
+    name: patroni
+    state: reloaded
+
+# stop patroni instance
+- name: patroni stop
+  ansible.builtin.service:
+    name: patroni
     state: stopped
 

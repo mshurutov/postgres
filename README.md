@@ -1,7 +1,8 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+postgres is multifunctional (single, replica, HA-cluster) of PostgreSQL.
+
 
 Requirements
 ------------
