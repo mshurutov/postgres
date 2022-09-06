@@ -1,0 +1,24 @@
+---
+
+# generate and put ssh-keys on cluster hosts
+- name: generate ssh-keys for every host of cluster
+  community.crypto.openssh_keypair:
+    path: "/tmp/{{ ansible_hostname }}-id_rsa"
+    size: 2048
+    state: present
+    type: rsa
+  delegate_to: 127.0.0.1
+
+- name: create .ssh dir for postgres
+  ansible.builtin.file:
+    path: {{ postgres_home_dir }}
+    state: directory
+    owner: {{ postgres_system_user }}
+    group: {{ postgres_system_user }}
+    mode: 0700
+
+- name: copy ssh-keys to target host
+  ansible.builtin.copy:
+    src: "{{ item }}"
+  loop: lookup('ansible.builtin.fileglob', '/tmp/*id_rsa*')
+    

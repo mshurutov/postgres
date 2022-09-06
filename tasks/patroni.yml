@@ -17,6 +17,7 @@
         path: "{{ postgres_data_dir }}"
         state: absent
   when: patroni_init_force is defined and patroni_init_force | bool
+  tags: patroni_init
   
 - name: check if config dir exists
   ansible.builtin.file:
@@ -25,6 +26,7 @@
     group: "{{ patroni_group }}"
     mode: 0700
     state: directory
+  tags: patroni_conf
 
 - name: copy config to target system
   ansible.builtin.template:
@@ -34,5 +36,30 @@
     group: "{{ patroni_group }}"
     mode: 0600
     state: present
+  tags: patroni_conf
 
-- name: create ssh-keys and put its to hosts of cluster
+- name: setup ssh keys on cluster nodes
+  ansible.builtin.import_tasks: "ssh-keys.yml"
+  tags: patroni_ssh_keys
+
+- name: start patroni on master
+  ansible.builtin.service:
+    name: patroni
+    state: started
+  when: ansible_hostname == patroni_master_host
+  tags: patroni_start
+
+- name: wait for master will be started
+  ansible.builtin.wait_for:
+    host: {{ patroni_master_host }}
+    port: {{ postgres_client_port }}
+    state: started
+  tags: patroni_start
+
+- name: start other hosts of the cluster
+  ansible.builtin.service:
+    name: patroni
+    state: started
+  when: ansible_hostname != patroni_master_host
+  tags: patroni_start
+

@@ -6,6 +6,7 @@ postgres_major_version: 14
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_install_mode: "single"
 postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/"
+postgres_home_dir: "/var/lib/postgresql"
 postgres_data_dir: "/var/lib/postgresql/{{ postgres_major_version }}/data"
 postgres_init_options: "--auth-host=scram-sha-256 --auth-local=peer --data-checksums"
 postgres_password_encoding: "scram-sha-256"
@@ -38,11 +39,14 @@ postgres_params:
   - { name: shared_preload_libraries, value: "pg_stat_statements" }
 postgres_pg_hba_lines:
   - local	all				postgres								peer
-  - host	all				all				127.0.0.1/32			md5
-  - host	all				all				::1/128					md5
-  - host	all				postgres		0.0.0.1/0				reject
-  - host	replication		repluser		samenet					md5
-  - host	all				all				samenet					md5
+  - host	all				all				127.0.0.1/32			{{ postgres_password_encoding }}
+  - host	all				all				::1/128					{{ postgres_password_encoding }}
+  - host	all				postgres		0.0.0.0/0				reject
+  - host	replication		repluser		samenet					{{ postgres_password_encoding }}
+  - host	all				all				samenet					{{ postgres_password_encoding }}
+postgres_repl_user: 'repluser'
+postgres_rewind_user: 'rewinduser'
+postgres_system_user: 'postgres'
 
 # distr dependent variables
 # portage - gentoo linux
@@ -81,3 +85,17 @@ patroni_user: 'postgres'
 patroni_group: "{{ patroni_user }}"
 patroni_config_dir: '/etc/patroni'
 patroni_config_file: '{{ patroni_config_dir }}/patroni.yml'
+patroni_restapi_port: 8008
+patroni_dcs: etcd
+patroni_ttl: 30
+patroni_loop_wait: 10
+patroni_retry_timeout: 10
+patroni_standby_master: 127.0.0.1
+patroni_standby_master_port: {{ postgres_client_port }}
+patroni_standby_slot_name: 'patroni'
+patroni_maximum_lag_on_failover: 1048576
+patroni_postgres_listen: 0.0.0.0:{{ postgres_client_port }}
+patroni_base_roles:
+  - { job: 'superuser', name: 'postgres', password: 'postgrespassword' }
+  - { job: 'replication', name: '{{ postgres_repl_user }}', password: 'replpwd' }
+  - { job: 'rewind', name: '{{ postgres_rewind_user }}', password: 'rewindpwd' }

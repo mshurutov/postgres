@@ -1,0 +1,117 @@
+# /etc/patroni/patroni.yml
+# this file created by ansible, you shouldn't edit it manually
+
+scope: {{ patroni_scope_name }}
+{% if defined etcd_service_name %}
+namespace: {{ etcd_service_name }}
+{% endif %}
+name: {{ inventory_hostname_short }}
+
+restapi:
+  connect_address: {{ ansible_default_ipv4.address }}:{{ patroni_restapi_port }}
+  listen: 0.0.0.0:{{ patroni_restapi_port }}
+#  authentication:
+#    username: {{ patroni_restapi_user }}
+#    password: {{ patronit_restapi_password }}
+#  certfile: {{ host_ssl_cert_file }}
+#  keyfile: {{ host_ssl_key_file }}
+#  keyfile_password: {{ host_ssl_key_file_password }}
+#  cafile: {{host_ssl_ca_file }} 
+#  ciphers
+#  verify_client
+#  allowlist
+#  allowlist_include_members
+#  http_extra_headers
+#  https_extra_headers
+
+# ctl:
+#   insecure: false # Allow connections to SSL sites without certs
+#   certfile: {{ host_ssl_cert_file }}
+#   cacert: {{ host_ssl_ca_file }}
+
+{% include 'dcs/' + patroni_dcs + '.yml.j2' %}
+
+#raft:
+#  data_dir: .
+#  self_addr: 127.0.0.1:2222
+#  partner_addrs:
+#  - 127.0.0.1:2223
+#  - 127.0.0.1:2224
+
+bootstrap:
+  # this section will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
+  # and all other cluster members will use it as a `global configuration`
+  dcs:
+    ttl: {{ patroni_ttl }}
+    loop_wait: {{ patroni_loop_wait }}
+    retry_timeout: {{ patroni_retry_timeout }}
+    maximum_lag_on_failover: {{ patroni_maximum_lag_on_failover }}
+#    master_start_timeout: 300
+    synchronous_mode: true
+{% if patrony_standby %}
+    standby_cluster:
+      host: {{ patroni_standby_master }}
+      port: {{ patroni_standby_master_port }}
+      primary_slot_name: {{ patroni_standby_slot_name }}
+{% endif %}
+    postgresql:
+      use_pg_rewind: true
+#      use_slots: true
+      parameters:
+{% for param in postgres_params %}
+        {{ param.name }}: {{ param.value }}
+{% endfor %}
+  # some desired options for 'initdb'
+  initdb:  # Note: It needs to be a list (some options need values, others are switches)
+  - encoding: UTF8
+  - auth-host: {{ postgres_password_encoding }}
+  - auth-local: peer
+  - data-checksums
+
+  pg_hba:  # Add following lines to pg_hba.conf after running 'initdb'
+{% for phl in postgres_pg_hba_lines %}
+  - {{ phl }}
+{% endfor %}
+
+  # Additional script to be launched after initial cluster creation (will be passed the connection URL as parameter)
+# post_init: /usr/local/bin/setup_cluster.sh
+
+{% if patroni_bootstrap_users is defined %}
+  # Some additional users users which needs to be created after initializing new cluster
+{% for user in patroni_bootstrap_users %}
+  users:
+    {{ user.name }}:
+      password: {{ user.password }}
+      {% if defined user.options %}
+      {% for opt in user.options %}
+      options:
+        - {{ opt }}
+      {% endfor %}
+      {% endif %}
+{% endfor %}
+{% endibf %}
+
+postgresql:
+  connect_address: {{ ansible_default_ipv4.address }}:{{ postgres_client_port }}
+  listen: {{ patroni_postgres_listen }}
+  data_dir: {{ postgres_data_dir }}
+#  bin_dir:
+  config_dir: {{ postgres_conf_dir }}
+  pgpass: {{ postgres_home_dir }}
+  authentication:
+  {% for role in patroni_base_roles %}`
+    {{ role.job }}:
+      username: {{ role.name }}
+      password: {{ role.password }}
+  {% endfor %}
+
+#watchdog:
+#  mode: automatic # Allowed values: off, automatic, required
+#  device: /dev/watchdog
+#  safety_margin: 5
+
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false
