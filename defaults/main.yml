@@ -2,6 +2,9 @@
 
 # defaults file for postgres
 # common variable for role
+# local files and directories definition
+postgres_templates_dir: "{{ role_path }}/templates"
+# postgres variables
 postgres_major_version: 14
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_install_mode: "single"
@@ -9,6 +12,9 @@ postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/"
 postgres_home_dir: "/var/lib/postgresql"
 postgres_data_dir: "/var/lib/postgresql/{{ postgres_major_version }}/data"
 postgres_init_options: "--auth-host=scram-sha-256 --auth-local=peer --data-checksums"
+postgres_repl_user: 'repluser'
+postgres_rewind_user: 'rewinduser'
+postgres_system_user: 'postgres'
 postgres_password_encoding: "scram-sha-256"
 postgres_client_port: 5432
 postgres_params:
@@ -44,9 +50,6 @@ postgres_pg_hba_lines:
   - host	all				postgres		0.0.0.0/0				reject
   - host	replication		repluser		samenet					{{ postgres_password_encoding }}
   - host	all				all				samenet					{{ postgres_password_encoding }}
-postgres_repl_user: 'repluser'
-postgres_rewind_user: 'rewinduser'
-postgres_system_user: 'postgres'
 
 # distr dependent variables
 # portage - gentoo linux

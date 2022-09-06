@@ -11,14 +11,38 @@
 
 - name: create .ssh dir for postgres
   ansible.builtin.file:
-    path: {{ postgres_home_dir }}
+    path: "{{ postgres_home_dir }}/.ssh"
     state: directory
-    owner: {{ postgres_system_user }}
-    group: {{ postgres_system_user }}
+    owner: "{{ postgres_system_user }}"
+    group: "{{ postgres_system_user }}"
     mode: 0700
 
 - name: copy ssh-keys to target host
   ansible.builtin.copy:
     src: "{{ item }}"
-  loop: lookup('ansible.builtin.fileglob', '/tmp/*id_rsa*')
-    
+    dest: "{{ postgres_home_dir }}/.ssh/{{ item | regex_replace(ansible_hostname + '-','') }}"
+    owner: "{{ postgres_system_user }}"
+    group: "{{ postgres_system_user }}"
+    mode: 0600
+  loop: "{{ lookup('ansible.builtin.fileglob', '/tmp/{{ ansible_hostname }}-id_rsa*') }}"
+
+- name: create authorized key for postgres 
+  ansible.posix.authorized_key:
+    user: "{{ postgres_system_user }}"
+    state: present
+    key: "{{ lookup('ansible.builtin.fileglob','/tmp/*id_rsa.pub') }}"
+
+- name: create known_hosts for postgres
+  ansible.builtin.known_hosts:
+    path: "{{ postgres_home_dir }}/.ssh/known_hosts"
+    name: "{{ ansible_hostname }}"
+    key: "{{ ansible_hostname }},{{ ansible_default_ipv4.address }} {{ lookup('ansible.builtin.file', '/tmp/{{ ansible_hostname }}-id_rsa.pub') }}"
+    state: present
+
+- name: delete generated files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ lookup('ansible.builtin.fileglob', '/tmp/{{ ansible_hostname }}-id_rsa*') }}"
+  delegate_to: 127.0.0.1
+
