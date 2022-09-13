@@ -1,0 +1,29 @@
+---
+
+# set replica mode for single host
+- name: copy backup to host
+  block:
+    - name: create basebackup from master host
+      become: yes
+      become_user: "{{ postgres_system_user }}"
+      ansible.builtin.command: "pg_basebackup -D {{ postgres_data_dir }} -X stream -R -d {{ postgres_backup_connstring }}"
+      when: postgres_replica_init == 'from_master'
+    - name: copy backup from backup host
+      become: yes
+      become_user: "{{ postgres_system_user }}"
+      ansible.builtin.command: "scp -r {{ postgres_backup_host }}:/{{ postgres_backup_dir }} {{ postgres_data_dir }}"
+      when: postgres_replica_init == 'from_backup'
+  tags: replica_init
+
+- name: configure replica
+  become: yes
+  become_user: "{{ postgres_system_user }}"
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_conf_dir }}/{{ postgres_recovery_conf }}"
+    insertafter: "^.*recovery mode"
+    regexp: "^#?\s*{{ item.name }} = '[^']*'(.*)$"
+    backrefs: yes
+    line: "{{ item.name }} = '{{ item.value }}'\1"
+    state: present
+  loop: "{{ postgres_recovery_params }}"
+  notify: postgres start

@@ -9,6 +9,7 @@ postgres_major_version: 14
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_install_mode: "single"
 postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/"
+postgres_recovery_conf: "postgresql.conf"
 postgres_home_dir: "/var/lib/postgresql"
 postgres_data_dir: "/var/lib/postgresql/{{ postgres_major_version }}/data"
 postgres_init_options: "--auth-host=scram-sha-256 --auth-local=peer --data-checksums"
@@ -17,6 +18,8 @@ postgres_rewind_user: 'rewinduser'
 postgres_system_user: 'postgres'
 postgres_password_encoding: "scram-sha-256"
 postgres_client_port: 5432
+postgres_use_pgbouncer: 'no'
+postgres_backup_connstring: ''
 postgres_params:
   - { name: listen_addresses, value: "'*'" }
   - { name: port, value: "{{ postgres_client_port }}" }
