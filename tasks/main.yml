@@ -14,4 +14,4 @@
     name: pgbouncer
   when: postgres_use_pgbouncer
   tags: pgbouncer
-  block:
+
