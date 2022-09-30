@@ -3,7 +3,7 @@
 # Main config for patroni+etcd cluster
 # ETCD variables must be defined before exec this role
 - name: install patroni packages
-  ansible.builtin.import_tasks: "{{ ansible_pkg_mgr }}-patroni-install.yml"
+  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-patroni-install.yml"
   tags: patroni_install
 
 - name: stop service and delete exists postgres data directory

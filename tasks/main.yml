@@ -2,11 +2,11 @@
 
 # tasks file for postgres
 - name: install postgres
-  ansible.builtin.import_tasks: "{{ ansible_pkg_mgr }}-install.yml"
+  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"
   tags: postgres_install
 
 - name: init and start postgres
-  ansible.builtin.import_tasks: "{{ postgres_install_mode }}.yml"
+  ansible.builtin.include_tasks: "{{ postgres_install_mode }}.yml"
   tags: postgres_init,postgres_start
 
 - name: setup pgbouncer if it is needed
