@@ -97,7 +97,7 @@ patroni_ttl: 30
 patroni_loop_wait: 10
 patroni_retry_timeout: 10
 patroni_standby_master: 127.0.0.1
-patroni_standby_master_port: {{ postgres_client_port }}
+patroni_standby_master_port: "{{ postgres_client_port }}"
 patroni_standby_slot_name: 'patroni'
 patroni_maximum_lag_on_failover: 1048576
 patroni_postgres_listen: 0.0.0.0:{{ postgres_client_port }}
