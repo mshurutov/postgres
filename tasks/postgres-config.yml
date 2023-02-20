@@ -1,0 +1,29 @@
+---
+
+
+- name: edit postgresql.conf
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_conf_dir }}/postgresql.conf"
+    regexp: '^#?\s*{{ item.name }}[^#]*(\s*#?.*)$'
+    line: '{{ item.name }} = {{ item.value }} \1'
+    state: present
+    backrefs: yes
+  loop: "{{ postgres_params }}"
+  notify: postgres restart
+  tags: postgres_config
+- name: delete all presettings in pg_hba.conf
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_conf_dir }}/pg_hba.conf"
+    regexp: '^(local|host).*$'
+    state: absent
+  tags: postgres_config
+- name: add prepared lines into pg_hba.conf
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_conf_dir }}/pg_hba.conf"
+    line: "{{ item }}"
+    state: present
+    insertafter: EOF
+  loop: "{{ postgres_pg_hba_lines }}"
+  notify: postgres reload conf
+  tags: postgres_config
+

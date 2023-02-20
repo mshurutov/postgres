@@ -8,6 +8,12 @@
     name: "{{ postgres_service_name }}"
     state: started
 
+# enable postgres instance
+- name: postgres enable
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    enabled: true
+
 # restart postgres instance
 - name: postgres restart
   ansible.builtin.service:

@@ -1,12 +1,47 @@
 ---
 
 # set replica mode for single host
+- name: check if postgres stopped
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: stopped
+  tags: replica_init
+
+- name: delete PGDATA dir
+  ansible.builtin.file:
+    path: "{{ postgres_data_dir }}"
+    state: absent
+  tags: replica_init
+
+- name: init postgres for distros where postgres_conf_dir != postgres_data_dir
+  block:
+    - name: init PG
+      ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-single-init.yml"
+      tags: replica_init
+    - name: delete PGDATA dir
+      ansible.builtin.file:
+        path: "{{ postgres_data_dir }}"
+        state: absent
+      tags: replica_init
+  when: replica_init_force is defined and replica_init_force | bool
+
+- name: add replica user into ~/.pgpass file of sysuser postgres
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_home_dir }}/.pgpass"
+    line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
+    create: true
+    owner: "{{ postgres_system_user }}"
+    group: "{{ postgres_system_user }}"
+    mode: 0600
+    state: "present"
+  tags: replica_init
+
 - name: copy backup to host
   block:
     - name: create basebackup from master host
       become: yes
       become_user: "{{ postgres_system_user }}"
-      ansible.builtin.command: "pg_basebackup -D {{ postgres_data_dir }} -X stream -R -d {{ postgres_backup_connstring }}"
+      ansible.builtin.command: "pg_basebackup -D {{ postgres_data_dir }} -X stream -R {{ postgres_backup_connstring }}"
       when: postgres_replica_init == 'from_master'
     - name: copy backup from backup host
       become: yes
@@ -15,15 +50,19 @@
       when: postgres_replica_init == 'from_backup'
   tags: replica_init
 
+- name: edit configs
+  ansible.builtin.import_tasks: "postgres-config.yml"
+  tags: replica_init
+
 - name: configure replica
   become: yes
   become_user: "{{ postgres_system_user }}"
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/{{ postgres_recovery_conf }}"
-    insertafter: "^.*recovery mode"
-    regexp: "^#?\s*{{ item.name }} = '[^']*'(.*)$"
+    regexp: '^#?\s*{{ item.name }}[^#]*(\s*#?.*)$'
+    line: '{{ item.name }} = {{ item.value }} \1'
     backrefs: yes
-    line: "{{ item.name }} = '{{ item.value }}'\1"
     state: present
   loop: "{{ postgres_recovery_params }}"
   notify: postgres start
+  tags: replica_init,postgres_start

@@ -7,11 +7,5 @@
 
 - name: init and start postgres
   ansible.builtin.include_tasks: "{{ postgres_install_mode }}.yml"
-  tags: postgres_init,postgres_start
-
-- name: setup pgbouncer if it is needed
-  ansible.builtin.import_role:
-    name: pgbouncer
-  when: postgres_use_pgbouncer
-  tags: pgbouncer
+  tags: postgres_single,postgres_patroni,postgres_stolon
 

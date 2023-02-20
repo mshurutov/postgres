@@ -8,17 +8,21 @@ postgres_templates_dir: "{{ role_path }}/templates"
 postgres_major_version: 14
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_install_mode: "single"
-postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/"
+postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
 postgres_recovery_conf: "postgresql.conf"
 postgres_home_dir: "/var/lib/postgresql"
 postgres_data_dir: "/var/lib/postgresql/{{ postgres_major_version }}/data"
-postgres_init_options: "--auth-host=scram-sha-256 --auth-local=peer --data-checksums"
-postgres_repl_user: 'repluser'
-postgres_rewind_user: 'rewinduser'
-postgres_system_user: 'postgres'
 postgres_password_encoding: "scram-sha-256"
+postgres_init_options: "--auth-host={{ postgres_password_encoding }} --auth-local=peer --data-checksums"
+postgres_repl_user: 'repluser'
+postgres_repl_password: 'replpwd'
+postgres_rewind_user: 'rewinduser'
+postgres_rewind_password: 'rewindpwd'
+postgres_system_user: 'postgres'
+postgres_own_user: "{{ postgres_system_user }}"
+postgres_own_password: "postgresownpwd }}"
 postgres_client_port: 5432
-postgres_use_pgbouncer: 'no'
+postgres_use_pgbouncer: false
 postgres_backup_connstring: ''
 postgres_params:
   - { name: listen_addresses, value: "'*'" }
@@ -30,14 +34,14 @@ postgres_params:
   - { name: maintenance_work_mem, value: "1GB" }
   - { name: wal_level, value: "replica" }
   - { name: archive_mode, value: "on" }
-  - { name: archive_command, value: "/bin/true" }
+  - { name: archive_command, value: "'/bin/true'" }
   - { name: max_wal_senders, value: "10" }
   - { name: max_replication_slots, value: "10" }
   - { name: hot_standby, value: "on" }
   - { name: max_logical_replication_workers, value: "5" }
   - { name: log_destination, value: "'stderr'" }
   - { name: logging_collector, value: "on" }
-  - { name: log_file_mode, value: "640" }
+  - { name: log_file_mode, value: "0640" }
   - { name: log_min_duration_statement, value: "0" }
   - { name: log_duration, value: "on" }
   - { name: log_line_prefix, value: "'%t [%p]: user=%u,db=%d,app=%a,client=%h '" }
@@ -45,14 +49,15 @@ postgres_params:
   - { name: autovacuum_vacuum_scale_factor, value: "0.05" }
   - { name: autovacuum_vacuum_insert_scale_factor, value: "0.01" }
   - { name: autovacuum_analyze_scale_factor, value: "0.01" }
-  - { name: shared_preload_libraries, value: "pg_stat_statements" }
+  - { name: shared_preload_libraries, value: "'pg_stat_statements'" }
+  - { name: restart_after_crash, value: "false" }
 postgres_pg_hba_lines:
-  - local	all				postgres								peer
-  - host	all				all				127.0.0.1/32			{{ postgres_password_encoding }}
-  - host	all				all				::1/128					{{ postgres_password_encoding }}
-  - host	all				postgres		0.0.0.0/0				reject
-  - host	replication		repluser		samenet					{{ postgres_password_encoding }}
-  - host	all				all				samenet					{{ postgres_password_encoding }}
+  - local	all			postgres						peer
+  - host	all			all			127.0.0.1/32			{{ postgres_password_encoding }}
+  - host	all			all			::1/128				{{ postgres_password_encoding }}
+  - host	all			postgres		0.0.0.0/0			reject
+  - host	replication		repluser		samenet				{{ postgres_password_encoding }}
+  - host	all			all			samenet				{{ postgres_password_encoding }}
 
 # distr dependent variables
 # portage - gentoo linux
@@ -67,9 +72,10 @@ postgres_portage_confd:
 # APT variables (Debian, [KLX]?Ubuntu, Mint, and other deb-based distros)
 postgres_apt_packages:
   - "postgresql-{{ postgres_major_version }}"
-  - "postgresql-contrib-{{ postgres_major_version }}"
+  - "postgresql-contrib"
 postgres_apt_cluster_name: "main"
-postgres_apt_home_dir: /var/lib/postgres
+postgres_apt_home_dir: "/var/lib/postgresql"
+postgres_templates_apt_dir: "{{ postgres_templates_dir }}/apt"
 patroni_apt_packages:
   - "python3-psycopg2"
   - "patroni"
@@ -78,7 +84,7 @@ patroni_apt_packages:
 postgres_yum_packages:
  - "postgresql{{ postgres_major_version }}-server"
  - "postgresql{{ postgres_major_version }}-contrib"
-postgres_yum_home_dir: /var/lib/pgsql
+postgres_yum_home_dir: "/var/lib/pgsql"
 patroni_yum_packages:
   - "python3-psycopg2"
   - "patroni"
@@ -87,21 +93,21 @@ patroni_yum_packages:
 # Cluster dependent variables
 # patroni
 patroni_scope_name: 'example'
-patroni_user: 'postgres'
+patroni_user: "{{ postgres_system_user }}"
 patroni_group: "{{ patroni_user }}"
 patroni_config_dir: '/etc/patroni'
 patroni_config_file: '{{ patroni_config_dir }}/patroni.yml'
 patroni_restapi_port: 8008
-patroni_dcs: etcd
+patroni_dcs: "etcd"
 patroni_ttl: 30
 patroni_loop_wait: 10
 patroni_retry_timeout: 10
-patroni_standby_master: 127.0.0.1
+patroni_standby_master: "127.0.0.1"
 patroni_standby_master_port: "{{ postgres_client_port }}"
 patroni_standby_slot_name: 'patroni'
 patroni_maximum_lag_on_failover: 1048576
-patroni_postgres_listen: 0.0.0.0:{{ postgres_client_port }}
+patroni_postgres_listen: "0.0.0.0:{{ postgres_client_port }}"
 patroni_base_roles:
-  - { job: 'superuser', name: 'postgres', password: 'postgrespassword' }
-  - { job: 'replication', name: '{{ postgres_repl_user }}', password: 'replpwd' }
-  - { job: 'rewind', name: '{{ postgres_rewind_user }}', password: 'rewindpwd' }
+  - { job: 'superuser', name: '{{ postgres_own_user }}', password: '{{ postgres_own_password }}' }
+  - { job: 'replication', name: '{{ postgres_repl_user }}', password: '{{ postgres_repl_password }}' }
+  - { job: 'rewind', name: '{{ postgres_rewind_user }}', password: '{{ postgres_rewind_password }}' }

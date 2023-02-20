@@ -1,30 +1,28 @@
 ---
 
 - name: init postgres
-  ansible.builtin.import_tasks: "{{ ansible_pkg_mgr }}-{{ postgres_install_mode }}-init.yml"
+  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-{{ postgres_install_mode }}-init.yml"
   tags: postgres_init
 
 - name: edit configs
-  block:
-    - name: edit postgresql.conf
-      ansible.builtin.lineinfile:
-        path: "{{ postgres_conf_dir }}/postgresql.conf"
-        regexp: '^#?\s*{{ item.name }}.*(\s*#.*)?$'
-        line: '{{ item.name }} = {{ item.value }}\1'
-        state: present
-        backrefs: yes
-      loop: "{{ postgres_params }}"
-    - name: delete all presettings in pg_hba.conf
-      ansible.builtin.lineinfile:
-        path: "{{ postgres_conf_dir }}/pg_hba.conf"
-        regexp: '^(local|host).*$'
-        state: absent
-    - name: add prepared lines into pg_hba.conf
-      ansible.builtin.lineinfile:
-        path: "{{ postgres_conf_dir }}/pg_hba.conf"
-        line: "{{ item }}"
-        state: present
-        insertafter: EOF
-      loop: "{{ postgres_pg_hba_lines }}"
-      notify: postgres start
-  tags: postgres_config,postgres_start
+  ansible.builtin.import_tasks: "postgres-config.yml"
+  tags: postgres_config
+
+- name: postgres start
+  ansible.builtin.service:
+    name: "{{ postgres_service_name }}"
+    state: started
+  notify: postgres enable
+  tags: postgres_start
+
+- name: create postgres system users
+  become: true
+  become_user: 'postgres'
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+  loop:
+    -  { name: "{{ postgres_own_user }}", password: "{{ postgres_own_password }}" }
+    -  { name: "{{ postgres_repl_user }}", password: "{{ postgres_repl_password }}", role_attr_flags: "REPLICATION" }
+  tags: postgres_system_user

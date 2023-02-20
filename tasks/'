@@ -7,6 +7,9 @@
       ansible.builtin.apt:
         name: lsb-release
         state: present
+    - name: get release name
+      ansible.builtin.command: lsb_release -cs
+      register: os_release
     - name: add pgdg repo gpg key
       ansible.builtin.apt_key:
         url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -29,6 +32,5 @@
 - name: remove created cluster
   ansible.builtin.command: "pg_dropcluster --stop {{ postgres_major_version }} {{ postgres_apt_cluster_name }}"
   args:
-    removes: "{{ postgres_data_dir }}"
-  when: postgres_init_force is defined and postgres_init_force | bool
+    removes: "{{ postgres_apt_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
   tags: postgres_apt_install
