@@ -1,5 +1,9 @@
 ---
 
+- name: set any variables:
+  ansible.builtin.include_vars:
+    file: "{{ postgres_vars_dir }}/single.yml"
+
 - name: init postgres
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-{{ postgres_install_mode }}-init.yml"
   tags: postgres_init

@@ -1,15 +1,24 @@
-# /etc/patroni/patroni.yml
+# {{ patroni_config_file }}
 # this file created by ansible, you shouldn't edit it manually
 
 scope: {{ patroni_scope_name }}
-{% if defined etcd_service_name %}
+{% if etcd_service_name is defined %}
 namespace: {{ etcd_service_name }}
 {% endif %}
 name: {{ inventory_hostname_short }}
 
+# Logging parameters if it is defined
+{% if patroni_log_params is defined %}
+{% for param in patroni_log_params %}
+{{ param.name }}: {{ param.value }}
+{% endfor%}
+{% endif %}
+
+# Rest API settings
 restapi:
   connect_address: {{ ansible_default_ipv4.address }}:{{ patroni_restapi_port }}
   listen: 0.0.0.0:{{ patroni_restapi_port }}
+{#
 #  authentication:
 #    username: {{ patroni_restapi_user }}
 #    password: {{ patronit_restapi_password }}
@@ -28,15 +37,18 @@ restapi:
 #   insecure: false # Allow connections to SSL sites without certs
 #   certfile: {{ host_ssl_cert_file }}
 #   cacert: {{ host_ssl_ca_file }}
+#}
 
 {% include 'dcs/' + patroni_dcs + '.yml.j2' %}
 
+{#
 #raft:
 #  data_dir: .
 #  self_addr: 127.0.0.1:2222
 #  partner_addrs:
 #  - 127.0.0.1:2223
 #  - 127.0.0.1:2224
+#}
 
 bootstrap:
   # this section will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
@@ -48,7 +60,7 @@ bootstrap:
     maximum_lag_on_failover: {{ patroni_maximum_lag_on_failover }}
 #    master_start_timeout: 300
     synchronous_mode: true
-{% if patrony_standby %}
+{% if patrony_standby is defined %}
     standby_cluster:
       host: {{ patroni_standby_master }}
       port: {{ patroni_standby_master_port }}
@@ -67,7 +79,6 @@ bootstrap:
   - auth-host: {{ postgres_password_encoding }}
   - auth-local: peer
   - data-checksums
-
   pg_hba:  # Add following lines to pg_hba.conf after running 'initdb'
 {% for phl in postgres_pg_hba_lines %}
   - {{ phl }}
@@ -82,28 +93,35 @@ bootstrap:
   users:
     {{ user.name }}:
       password: {{ user.password }}
-      {% if defined user.options %}
+      {% if user.options is defined %}
       {% for opt in user.options %}
       options:
         - {{ opt }}
       {% endfor %}
       {% endif %}
 {% endfor %}
-{% endibf %}
+{% endif %}
 
 postgresql:
   connect_address: {{ ansible_default_ipv4.address }}:{{ postgres_client_port }}
   listen: {{ patroni_postgres_listen }}
   data_dir: {{ postgres_data_dir }}
-#  bin_dir:
+  bin_dir: {{ postgres_bin_dir }}
   config_dir: {{ postgres_conf_dir }}
-  pgpass: {{ postgres_home_dir }}
+  pgpass: {{ postgres_home_dir }}/.pgpass.patroni
   authentication:
-  {% for role in patroni_base_roles %}`
+{% for role in patroni_base_roles %}
     {{ role.job }}:
       username: {{ role.name }}
       password: {{ role.password }}
-  {% endfor %}
+{% endfor %}
+{% if postgres_params_host is defined %}
+  parameters:
+    {{ param.name }}: {{ param.value }}
+{% for param in postgres_params_host %}
+{% endfor %}
+{% endif %}
+
 
 #watchdog:
 #  mode: automatic # Allowed values: off, automatic, required

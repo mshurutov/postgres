@@ -1,6 +1,7 @@
 # etcdv3 settings
-etcdv3:
-  hosts: {%- for eh in groups[etcd_hosts_group] -%}{{ eh.ansible_default_ipv4[address] }}:{{ etcd_client_port }}% if not loop.last %},{% endif %}{%- endfor -%} 
+etcd3:
+  hosts: {% for eh in groups[etcd_cluster_group] %}{{ hostvars[eh]['ansible_host'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} 
+{#
   # parameter hosts is minimal required, other parameters will be defined later
   # use_proxies
   # url
@@ -13,4 +14,5 @@ etcdv3:
   # cacert
   # cert
   # key
+#}
 

@@ -3,10 +3,11 @@
 # generate and put ssh-keys on cluster hosts
 - name: generate ssh-keys for every host of cluster
   community.crypto.openssh_keypair:
-    path: "/tmp/{{ ansible_hostname }}-id_rsa"
+    path: "/var/tmp/{{ ansible_hostname }}-id_rsa"
     size: 2048
     state: present
     type: rsa
+    mode: 0644
   delegate_to: 127.0.0.1
 
 - name: create .ssh dir for postgres
@@ -17,32 +18,52 @@
     group: "{{ postgres_system_user }}"
     mode: 0700
 
+- name: check if id_rsa keypair is not exists
+  ansible.builtin.file:
+    path: "{{ postgres_home_dir }}/.ssh/{{ item }}"
+    state: absent
+  loop:
+    - "id_rsa"
+    - "id_rsa.pub"
+    - "known_hosts"
+    - "authorized_keys"
+  
 - name: copy ssh-keys to target host
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ postgres_home_dir }}/.ssh/{{ item | regex_replace(ansible_hostname + '-','') }}"
+    dest: "{{ postgres_home_dir }}/.ssh/{{ item | basename | regex_replace(ansible_hostname + '-','') }}"
     owner: "{{ postgres_system_user }}"
     group: "{{ postgres_system_user }}"
     mode: 0600
-  loop: "{{ lookup('ansible.builtin.fileglob', '/tmp/{{ ansible_hostname }}-id_rsa*') }}"
+  with_fileglob: '/var/tmp/{{ ansible_hostname }}-id_rsa*'
 
 - name: create authorized key for postgres 
   ansible.posix.authorized_key:
     user: "{{ postgres_system_user }}"
     state: present
-    key: "{{ lookup('ansible.builtin.fileglob','/tmp/*id_rsa.pub') }}"
+    key: "{{ lookup('ansible.builtin.file', item) }}"
+  with_fileglob: '/var/tmp/*id_rsa.pub'
 
 - name: create known_hosts for postgres
   ansible.builtin.known_hosts:
+    hash_host: true
     path: "{{ postgres_home_dir }}/.ssh/known_hosts"
-    name: "{{ ansible_hostname }}"
-    key: "{{ ansible_hostname }},{{ ansible_default_ipv4.address }} {{ lookup('ansible.builtin.file', '/tmp/{{ ansible_hostname }}-id_rsa.pub') }}"
+    name: "{{ hostvars[item.0][item.1] }}"
+    key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + hostvars[item.0][item.1]) }}"
     state: present
+  loop: "{{ groups[postgres_hosts_group] | product(['inventory_hostname','ansible_ipad','ansible_host']) }}"
 
+- name: Set owner group and mode for known_hosts file
+  ansible.builtin.file:
+    path: "{{ postgres_home_dir }}/.ssh/known_hosts"
+    owner: "{{ postgres_system_user }}"
+    group: "{{ postgres_system_user }}"
+    mode: 0600
+  
 - name: delete generated files
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ lookup('ansible.builtin.fileglob', '/tmp/{{ ansible_hostname }}-id_rsa*') }}"
+  with_fileglob: '/var/tmp/{{ ansible_hostname }}-id_rsa*'
   delegate_to: 127.0.0.1
 
