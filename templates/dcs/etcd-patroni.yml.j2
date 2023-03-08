@@ -1,6 +1,6 @@
 # etcdv3 settings
 etcd3:
-  hosts: {% for eh in groups[etcd_cluster_group] %}{{ hostvars[eh]['ansible_host'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} 
+  hosts: {% for eh in groups[etcd_cluster_group] %}{{ hostvars[eh]['common_full_hostname'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} 
 {#
   # parameter hosts is minimal required, other parameters will be defined later
   # use_proxies

@@ -1,11 +1,11 @@
 # {{ patroni_config_file }}
-# this file created by ansible, you shouldn't edit it manually
+# this file managed by ansible, you shouldn't edit it manually
 
 scope: {{ patroni_scope_name }}
 {% if etcd_service_name is defined %}
 namespace: {{ etcd_service_name }}
 {% endif %}
-name: {{ inventory_hostname_short }}
+name: {{ common_short_hostname }}
 
 # Logging parameters if it is defined
 {% if patroni_log_params is defined %}
@@ -16,7 +16,7 @@ name: {{ inventory_hostname_short }}
 
 # Rest API settings
 restapi:
-  connect_address: {{ ansible_default_ipv4.address }}:{{ patroni_restapi_port }}
+  connect_address: {{ common_ip4_default }}:{{ patroni_restapi_port }}
   listen: 0.0.0.0:{{ patroni_restapi_port }}
 {#
 #  authentication:
@@ -39,16 +39,9 @@ restapi:
 #   cacert: {{ host_ssl_ca_file }}
 #}
 
-{% include 'dcs/' + patroni_dcs + '.yml.j2' %}
+{% include 'dcs/' + postgres_cluster_dcs + '-patroni.yml.j2' %}
 
-{#
-#raft:
-#  data_dir: .
-#  self_addr: 127.0.0.1:2222
-#  partner_addrs:
-#  - 127.0.0.1:2223
-#  - 127.0.0.1:2224
-#}
+#raft defined as deprecated so it has not settings
 
 bootstrap:
   # this section will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
@@ -103,7 +96,7 @@ bootstrap:
 {% endif %}
 
 postgresql:
-  connect_address: {{ ansible_default_ipv4.address }}:{{ postgres_client_port }}
+  connect_address: {{ common_ip4_default }}:{{ postgres_client_port }}
   listen: {{ patroni_postgres_listen }}
   data_dir: {{ postgres_data_dir }}
   bin_dir: {{ postgres_bin_dir }}

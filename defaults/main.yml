@@ -62,6 +62,7 @@ postgres_pg_hba_lines:
   - host  replication repluser samenet      {{ postgres_password_encoding }}
   - host  all         all      samenet      {{ postgres_password_encoding }}
 postgres_hosts_group: "pg_hosts"
+postgres_cluster_dcs: "etcd"
 
 # distr dependent variables
 # portage - gentoo linux
@@ -102,7 +103,6 @@ patroni_group: "{{ patroni_user }}"
 patroni_config_dir: '/etc/patroni'
 patroni_config_file: '{{ patroni_config_dir }}/patroni.yml'
 patroni_restapi_port: 8008
-patroni_dcs: "etcd"
 patroni_ttl: 30
 patroni_loop_wait: 10
 patroni_retry_timeout: 10

@@ -3,7 +3,7 @@
 # generate and put ssh-keys on cluster hosts
 - name: generate ssh-keys for every host of cluster
   community.crypto.openssh_keypair:
-    path: "/var/tmp/{{ ansible_hostname }}-id_rsa"
+    path: "/var/tmp/{{ common_short_hostname }}-id_rsa"
     size: 2048
     state: present
     type: rsa
@@ -31,11 +31,11 @@
 - name: copy ssh-keys to target host
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ postgres_home_dir }}/.ssh/{{ item | basename | regex_replace(ansible_hostname + '-','') }}"
+    dest: "{{ postgres_home_dir }}/.ssh/{{ item | basename | regex_replace(common_short_hostname + '-','') }}"
     owner: "{{ postgres_system_user }}"
     group: "{{ postgres_system_user }}"
     mode: 0600
-  with_fileglob: '/var/tmp/{{ ansible_hostname }}-id_rsa*'
+  with_fileglob: '/var/tmp/{{ common_short_hostname }}-id_rsa*'
 
 - name: create authorized key for postgres 
   ansible.posix.authorized_key:
@@ -51,7 +51,7 @@
     name: "{{ hostvars[item.0][item.1] }}"
     key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + hostvars[item.0][item.1]) }}"
     state: present
-  loop: "{{ groups[postgres_hosts_group] | product(['inventory_hostname','ansible_ipad','ansible_host']) }}"
+  loop: "{{ groups[postgres_hosts_group] | product(['common_short_hostname','common_ip4_default','common_full_hostname']) }}"
 
 - name: Set owner group and mode for known_hosts file
   ansible.builtin.file:
@@ -64,6 +64,6 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  with_fileglob: '/var/tmp/{{ ansible_hostname }}-id_rsa*'
+  with_fileglob: '/var/tmp/{{ common_short_hostname }}-id_rsa*'
   delegate_to: 127.0.0.1
 
