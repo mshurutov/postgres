@@ -1,0 +1,13 @@
+---
+
+# Install stolon on deb-based distro
+- name: set stolon repo
+  ansible.builtin.apt_repository:
+    codename: "{{ postgres_stolon_apt_repo_codename }}"
+    filename: "stolon"
+    repo: "{{ postgres_stolon_apt_repo }}"
+
+- name: install stolon package:
+  ansible.builtin.apt:
+    name: "stolon"
+    state: present

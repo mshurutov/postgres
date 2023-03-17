@@ -1,0 +1,13 @@
+---
+
+# Tasks for create stolon PostgreSQL cluster
+- name: set any variables
+  ansible.builtin.include_vars:
+    file: "{{ postgres_vars_dir }}/cluster.yml"
+  tags: postgres_patroni
+
+- name: install patroni packages
+  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-stolon-install.yml"
+  tags: patroni_install
+
+- name: 
