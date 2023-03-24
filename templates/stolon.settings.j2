@@ -1,0 +1,66 @@
+### stolon-sentinel options ###
+{% for opt in stolon_daemons_common_options %}
+{% if opt.key != "store_endpoints" %}
+{{ opt.comment if opt.comment is defined }}
+STSENTINEL_{{ opt.key | upper }}="{{ opt.value }}"
+{% endif %}
+{% endfor %}
+# a comma-delimited list of store endpoints (use https scheme for tls
+# communication) (defaults: http://127.0.0.1:2379 for etcd,
+# http://127.0.0.1:8500 for consul)
+{% if stolon_store_backend == "etcdv2" or stolon_store_backend == "etcdv3" or stolon_store_backend == "etcd" %}
+STSENTINEL_STORE_ENDPOINTS="{% for dcsh in groups[postgres_dcs_groups] %}http://{{ hostvars[dcsh]['common_full_hostname'] }}:{{ stolon_dcs_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+{% else %}
+STSENTINEL_STORE_ENDPOINTS="{{ consul_master_host }}:{{ stolon_dcs_client_port }}"
+{% endif %}
+{% if stolon_daemons_sentinel_options is defined %}
+{% for opt in stolon_daemons_sentinel_options %}
+{{ opt.comment if opt.comment is defined }}
+STSENTINEL_{{ opt.key | upper }}="{{ opt.value }}"
+{% endfor %}
+{% endif %}
+
+### stolon-keeper options ###
+{% for opt in stolon_daemons_common_options %}
+{% if opt.key != "store_endpoints" %}
+{{ opt.comment if opt.comment is defined }}
+STKEEPER_{{ opt.key | upper }}="{{ opt.value }}"
+{% endif %}
+{% endfor %}
+# a comma-delimited list of store endpoints (use https scheme for tls
+# communication) (defaults: http://127.0.0.1:2379 for etcd,
+# http://127.0.0.1:8500 for consul)
+{% if stolon_store_backend == "etcdv2" or stolon_store_backend == "etcdv3" or stolon_store_backend == "etcd" %}
+STKEEPER_STORE_ENDPOINTS="{% for dcsh in groups[postgres_dcs_groups] %}http://{{ hostvars[dcsh]['common_full_hostname'] }}:{{ stolon_dcs_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+{% else %}
+STKEEPER_STORE_ENDPOINTS="{{ consul_master_host }}:{{ stolon_dcs_client_port }}"
+{% endif %}
+{% if stolon_daemons_keeper_options is defined %}
+{% for opt in stolon_daemons_keeper_options %}
+{{ opt.comment if opt.comment is defined }}
+STKEEPER_{{ opt.key | upper }}="{{ opt.value }}"
+{% endfor %}
+{% endif %}
+
+### stolon proxy options ###
+{% for opt in stolon_daemons_common_options %}
+{% if opt.key != "store_endpoints" %}
+{{ opt.comment if opt.comment is defined }}
+STPROXY_{{ opt.key | upper }}="{{ opt.value }}"
+{% endif %}
+{% endfor %}
+# a comma-delimited list of store endpoints (use https scheme for tls
+# communication) (defaults: http://127.0.0.1:2379 for etcd,
+# http://127.0.0.1:8500 for consul)
+{% if stolon_store_backend == "etcdv2" or stolon_store_backend == "etcdv3" or stolon_store_backend == "etcd" %}
+STPROXY_STORE_ENDPOINTS="{% for dcsh in groups[postgres_dcs_groups] %}http://{{ hostvars[dcsh]['common_full_hostname'] }}:{{ stolon_dcs_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+{% else %}
+STPROXY_STORE_ENDPOINTS="{{ consul_master_host }}:{{ stolon_dcs_client_port }}"
+{% endif %}
+{% if stolon_daemons_proxy_options is defined %}
+{% for opt in stolon_daemons_proxy_options %}
+{{ opt.comment if opt.comment is defined }}
+STPROXY_{{ opt.key | upper }}="{{ opt.value }}"
+{% endfor %}
+{% endif %}
+

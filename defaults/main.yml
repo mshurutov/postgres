@@ -2,19 +2,22 @@
 
 # defaults file for postgres
 # common variable for role
-# local files and directories definition
+# role files and directories definition
 postgres_templates_dir: "{{ role_path }}/templates"
 postgres_vars_dir: "{{ role_path }}/vars"
 postgres_files_dir: "{{ role_path }}/files"
 # postgres variables
 postgres_major_version: 14
 postgres_install_mode: "single"
-postgres_service_name: "{{ 'postgres_' + ansible_pkg_mgr + '_service_name' }}"
-postgres_home_dir: "{{ 'postgres_' + ansible_pkg_mgr + '_home_dir' }}"
-postgres_conf_dir: "{{ 'postgres_' + ansible_pkg_mgr + '_conf_dir' }}"
-postgres_data_dir: "{{ 'postgres_' + ansible_pkg_mgr + '_data_dir' }}"
-postgres_bin_dir: "{{ 'postgres_' + ansible_pkg_mgr + '_bin_dir' }}"
+postgres_home_dir: "/var/lib/postgresql"
+postgres_pgpass_file: "{{ postgres_home_dir }}/.pgpass"
+postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
+postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
+postgres_bin_dir: "/usr/lib64/postgresql-15/bin"
+postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_recovery_conf: "postgresql.conf"
+postgres_kernel_params:
+  - { name: vm_swappiness, value: '5' }
 postgres_password_encoding: "scram-sha-256"
 postgres_init_options: "--data-checksums"
 postgres_repl_user: 'repluser'
@@ -43,6 +46,7 @@ postgres_params_default:
   - { name: max_logical_replication_workers, value: "5" }
   - { name: log_destination, value: "'stderr'" }
   - { name: logging_collector, value: "on" }
+  - { name: log_directory, value: 'log' }
   - { name: log_file_mode, value: "0640" }
   - { name: log_min_duration_statement, value: "0" }
   - { name: log_duration, value: "on" }
@@ -62,15 +66,16 @@ postgres_pg_hba_lines:
   - host  replication repluser samenet      {{ postgres_password_encoding }}
   - host  all         all      samenet      {{ postgres_password_encoding }}
 postgres_hosts_group: "pg_hosts"
+postgres_dcs_groups: "dev"
 postgres_cluster_dcs: "etcd"
 
 # distr dependent variables
 # portage - gentoo linux
-postgres_portage_service_name: "postgresql-{{ postgres_major_version }}"
-postgres_portage_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
-postgres_portage_home_dir: "/var/lib/postgresql"
-postgres_portage_data_dir: "{{ postgres_portage_home_dir }}/{{ postgres_major_version }}/data"
-postgres_portage_bin_dir: "/usr/lib64/postgresql-15/bin"
+#postgres_service_name: "postgresql-{{ postgres_major_version }}"
+#postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
+#postgres_home_dir: "/var/lib/postgresql"
+#postgres_data_dir: "{{ postgres_portage_home_dir }}/{{ postgres_major_version }}/data"
+#postgres_bin_dir: "/usr/lib64/postgresql-15/bin"
 portage_accept_keywords_file: "/etc/portage/package.accept_keywords/package.all"
 postgres_portage_packages: "dev-db/postgresql:{{ postgres_major_version }}"
 postgres_portage_confd:
@@ -80,29 +85,30 @@ postgres_portage_confd:
     line: 'PG_INITDB_OPTS="--encoding=UTF8 {{ postgres_init_options }}"'
 
 # APT variables (Debian, [KLX]?Ubuntu, Mint, and other deb-based distros)
-postgres_apt_service_name: "postgresql"
-postgres_apt_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/main"
-postgres_apt_home_dir: "/var/lib/postgresql"
-postgres_apt_data_dir: "{{ postgres_apt_home_dir }}/{{ postgres_major_version }}/main"
-postgres_apt_bin_dir: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
+postgres_apt_cluster_name: "main"
+#postgres_service_name: "postgresql"
+#postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/main"
+#postgres_home_dir: "/var/lib/postgresql"
+#postgres_data_dir: "{{ postgres_apt_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
+#postgres_bin_dir: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
 postgres_apt_packages:
   - "postgresql-{{ postgres_major_version }}"
   - "postgresql-contrib"
-postgres_apt_cluster_name: "main"
 postgres_templates_apt_dir: "{{ postgres_templates_dir }}/apt"
 patroni_apt_packages:
   - "python3-psycopg2"
   - "patroni"
+stolon_apt_repo_codename: "bullseye"
+stolon_apt_repo: null
+stolon_apt_packages:
+  - "stolon"
 
 # YUM/DNF (RedHat, CentOS, Rocky, Oracle)
-postgres_yum_service_name: "postgresql-{{ postgres_major_version }}"
-postgres_yum_home_dir: "/var/lib/pgsql"
-postgres_dnf_home_dir: "{{ postgres_yum_home_dir }}"
-postgres_yum_data_dir: "{{ postgres_yum_home_dir }}/{{ postgres_major_version }}/data"
-postgres_dnf_data_dir: "{{ postgres_yum_data_dir }}"
-postgres_yum_conf_dir: "{{ postgres_yum_data_dir }}"
-postgres_dnf_conf_dir: "{{ postgres_yum_conf_dir }}"
-postgres_yum_bin_dir: "/usr/lib64/postgresql-15/bin"
+#postgres_service_name: "postgresql-{{ postgres_major_version }}"
+#postgres_home_dir: "/var/lib/pgsql"
+#postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
+#postgres_conf_dir: "{{ postgres_data_dir }}"
+#postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
 postgres_yum_packages:
  - "postgresql{{ postgres_major_version }}-server"
  - "postgresql{{ postgres_major_version }}-contrib"
@@ -122,9 +128,10 @@ patroni_restapi_port: 8008
 patroni_ttl: 30
 patroni_loop_wait: 10
 patroni_retry_timeout: 10
-patroni_standby_master: "127.0.0.1"
-patroni_standby_master_port: "{{ postgres_client_port }}"
-patroni_standby_slot_name: 'patroni'
+#patroni_standby:
+#  master: "127.0.0.1"
+#  master_port: "{{ postgres_client_port }}"
+#  slot_name: 'patroni'
 patroni_maximum_lag_on_failover: 1048576
 patroni_postgres_listen: "0.0.0.0:{{ postgres_client_port }}"
 patroni_base_roles:
@@ -134,3 +141,123 @@ patroni_base_roles:
 
 # stolon
 stolon_cluster_name: 'postgres'
+stolon_metrics_listen_address: '0.0.0.0:8080'
+stolon_store_backend: 'etcdv3'
+stolon_dcs_client_port: 2379
+stolon_daemons_config_file: "/etc/default/stolon"
+stolon_data_dir: "/var/lib/stolon"
+stolon_own_pgpassfile: "{{ stolon_data_dir }}/.ownpass"
+stolon_repl_pgpassfile: "{{ stolon_data_dir }}/.replpass"
+stolon_daemons_common_options_default:
+  - key: "cluster_name"
+    value: "{{ stolon_cluster_name }}"
+    comment: "# cluster name"
+  - key: "log_level"
+    value: "error"
+    comment: "# debug, info (default by developer), warn or error (default by me)"
+  - key: "store_backend"
+    value: "etcdv3"
+    comment: "# store backend type (etcdv2/etcd, etcdv3, consul or kubernetes)"
+stolon_daemons_sentinel_options_default: []
+stolon_daemons_keeper_options_default:
+  - key: "data_dir"
+    value: "{{ stolon_data_dir }}"
+    comment: "# data directory"
+  - key: "pg_bin_path"
+    value: "{{ postgres_bin_dir }}"
+    comment: |
+      # absolute path to postgresql binaries. If empty they will be searched
+      # in the current PATH
+  - key: "pg_listen_address"
+    value: "{{ common_ip4_default }}"
+    comment: |-
+      # postgresql instance listening address, local address used for the postgres
+      # instance. For all network interface, you can set the value to '*'.
+  - key: "pg_port"
+    value: "6432"
+    commet: |-
+      # postgresql instance listening port (default "5432")
+      # I set this option to 6432 because 5432 (default PG port)
+      # will be listening by stolon proxy)
+  - key: "pg_repl_auth_method"
+    value: "{{ postgres_password_encoding }}"
+    comment: "# postgres replication user auth method. Default is md5 (by developer)"
+  - key: "pg_repl_passwordfile"
+    value: "{{ stolon_repl_pgpassfile }}"
+    comment: |-
+      # postgres replication user password file. Only one of --pg-repl-password or
+      # --pg-repl-passwordfile must be provided. Must be the same for all keepers.
+  - key: "pg_repl_username"
+    value: "{{ postgres_repl_user }}"
+    comment: |-
+      # postgres replication user name. Required. It'll be created on db
+      # initialization. Must be the same for all keepers.
+  - key: "pg_su_auth_method"
+    value: "{{ postgres_password_encoding }}"
+    comment: "# postgres superuser auth method. Default is md5."
+  - key: "pg_su_passwordfile"
+    value: "{{ stolon_own_pgpassfile }}"
+    comment: |-
+      # postgres superuser password. Only one of --pg-su-password or
+      # --pg-su-passwordfile must be provided. Must be the same for all keepers.
+stolon_daemons_proxy_options_default:
+  - key: "listen_address"
+    value: "{{ common_ip4_default }}"
+    comment: "# proxy listening address (default \"127.0.0.1\" by developer, '*' by me)"
+  - key: "port"
+    value: "5432"
+    comment: "# proxy listening port (default \"5432\")"
+      
+
+stolon_init_params:
+  - name: "initMode"
+    value: "new"
+#  - name: "existingConfig"
+#    options:
+#      - name: "keeperUID"
+#        value: "must be defined"
+  - name: "newConfig"
+    options:
+      - name: "locale"
+        value: "ru_RU.UTF-8"
+      - name: "encoding"
+        value: "UTF-8"
+      - name: "dataChecksums"
+        value: "true"
+#  - name: "pitrConfig"
+#    options:
+#      - name: "dataRestoreCommand"
+#        value: "must be defined"
+#      - name: "archiveRecoverySettings"
+#        options:
+#          - name: "restoreCommand"
+#            value: "must be defined"
+#      - name: "recoveryTargetSettings"
+#        options:
+#          - name: "recoveryTarget"
+#            value: ""
+#          - name: "recoveryTargetLsn"
+#            value: ""
+#          - name: "recoveryTargetName"
+#            value: ""
+#          - name: "recoveryTargetTime"
+#            value: ""
+#          - name: "recoveryTargetXid"
+#            value: ""
+#          - name: "recoveryTargetTimeline"
+#            value: ""
+#  - name: "standbyConfig"
+#    options:
+#      - name: "standbySettings"
+#        options:
+#          - name: "primaryConnInfo"
+#            value: "must be defined"
+#          - name: "primarySlotName"
+#            value: ""
+#          - name: "recoveryMinApplyDelay"
+#            value: ""
+#      - name: "archiveRecoverySettings"
+#        options:
+#          - name: "restoreCommand"
+#            value: "/bin/true"
+

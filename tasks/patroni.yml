@@ -57,12 +57,12 @@
   ansible.builtin.service:
     name: patroni
     state: started
-  when: ansible_fqdn == patroni_master_host
+  when: ansible_fqdn == postgres_master_host
   tags: patroni_start
 
 - name: wait for master will be started
   ansible.builtin.wait_for:
-    host: "{{ patroni_master_host }}"
+    host: "{{ postgres_master_host }}"
     port: "{{ postgres_client_port }}"
     state: started
   tags: patroni_start

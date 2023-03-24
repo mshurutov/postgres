@@ -1,0 +1,43 @@
+{
+{% for param in stolon_init_params %}
+{% if param.options is defined and param.name != "pgParameters" and param.name != "pgHBA" %}
+	"{{ param.name }}": {
+{% for subparam in param.options %}
+{% if subparam.options is defined %}
+		"{{ subparam.name }}": {
+{% for ssprm in subparam.options %}
+{% if ssprm.value != "true" and ssprm.value != "false" %}
+			"{{ ssprm.name }}": "{{ ssprm.value }}"{% if not loop.last %},{% endif +%}
+{% else %}
+			"{{ ssprm.name }}": {{ ssprm.value }}{% if not loop.last %},{% endif +%}
+{% endif %}
+{% endfor %}
+		}{% if not loop.last %},{% endif +%}
+{% else %}
+{% if subparam.value != "true" and subparam.value != "false" %}
+		"{{ subparam.name }}": "{{ subparam.value }}"{% if not loop.last %},{% endif +%}
+{% else %}
+		"{{ subparam.name }}": {{ subparam.value }}{% if not loop.last %},{% endif +%}
+{% endif %}
+{% endif %}
+{% endfor %}
+	},
+{% else %}
+{% if param.value != "true" and param.value != "false" %}
+	"{{ param.name }}": "{{ param.value }}"{% if not loop.last %},{% endif +%}
+{% else %}
+	"{{ param.name }}": {{ param.value }}{% if not loop.last %},{% endif +%}
+{% endif %}
+{% endif %}
+{% endfor %}
+	"pgParameters": {
+{% for param in postgres_params %}
+		"{{ param.name }}": "{{ param.value | regex_replace("'")}}"{% if not loop.last %},{% endif +%}
+{% endfor %}
+	},
+	"pgHBA": [
+{% for param in postgres_pg_hba_lines %}
+		"{{ param }}"{% if not loop.last %},{% endif +%}
+{% endfor %}
+	]
+}

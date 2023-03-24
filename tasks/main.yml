@@ -1,6 +1,21 @@
 ---
 
 # tasks file for postgres
+# set any variables
+- name: set base variables
+  ansible.builtin.include_vars:
+    file: "{{ postgres_vars_dir }}/main.yml"
+  tags: postgres_init
+
+- name: set kernel parameters
+  ansible.posix.sysctl:
+    name: "{{ item.name | regex_replace('_','.') }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    state: present 
+  loop: "{{ postgres_kernel_params }}"
+  tags: postgres_init
+
 - name: install postgres
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"
   tags: postgres_install

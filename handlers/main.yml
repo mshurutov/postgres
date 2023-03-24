@@ -57,3 +57,21 @@
     name: patroni
     state: stopped
 
+# restart stolon-sentinel instance
+- name: stolon-sentinel restart
+  ansible.builtin.service:
+    name: stolon-sentinel
+    state: restarted
+
+# restart stolon-keeper instance
+- name: stolon-keeper restart
+  ansible.builtin.service:
+    name: stolon-keeper
+    state: restarted
+
+# restart stolon-proxy instance
+- name: stolon-proxy restart
+  ansible.builtin.service:
+    name: stolon-proxy
+    state: restarted
+

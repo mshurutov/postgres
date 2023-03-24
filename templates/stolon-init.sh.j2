@@ -1,0 +1,11 @@
+#!/bin/bash
+# stolon cluster init script
+
+stolonctl init -y --cluster-name {{ stolon_cluster_name }} \
+	--store-backend {{ stolon_store_backend }} \
+{% if stolon_store_backend == "etcdv2" or stolon_store_backend == "etcdv3" or stolon_store_backend == "etcd" %}
+	--store-endpoints {% for dcsh in groups[postgres_dcs_groups] %}http://{{ hostvars[dcsh]['common_full_hostname'] }}:{{ stolon_dcs_client_port }}{% if not loop.last %},{% endif %}{% endfor %} \
+{% else %}
+	--store-endpoints {{ consul_master_host }}:{{ stolon_dcs_client_port }} \
+{% endif %}
+	-f stolon-init-config.json
