@@ -1,3 +1,4 @@
 ---
 
 # vars file for postgres
+postgres_kernel_params: "{{ [postgres_kernel_params_default | default([]),postgres_kernel_params_group_all | default([]),postgres_kernel_params_group | default([])] | community.general.lists_mergeby('key',recursive=true,list_merge='append_rp') }}"

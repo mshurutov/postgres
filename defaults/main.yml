@@ -16,7 +16,7 @@ postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
 postgres_bin_dir: "/usr/lib64/postgresql-15/bin"
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
 postgres_recovery_conf: "postgresql.conf"
-postgres_kernel_params:
+postgres_kernel_params_default:
   - { name: vm_swappiness, value: '5' }
 postgres_password_encoding: "scram-sha-256"
 postgres_init_options: "--data-checksums"
@@ -203,13 +203,11 @@ stolon_daemons_keeper_options_default:
 stolon_daemons_proxy_options_default:
   - key: "listen_address"
     value: "{{ common_ip4_default }}"
-    comment: "# proxy listening address (default \"127.0.0.1\" by developer, '*' by me)"
+    comment: "# proxy listening address (default \"127.0.0.1\" by developer, 'common_ip4_default' by me)"
   - key: "port"
     value: "5432"
     comment: "# proxy listening port (default \"5432\")"
-      
-
-stolon_init_params:
+stolon_init_params_default:
   - name: "initMode"
     value: "new"
 #  - name: "existingConfig"

@@ -20,13 +20,17 @@
     src: "{{ postgres_templates_dir }}/stolon.settings.j2"
     dest: "{{ stolon_daemons_config_file }}"
   notify:
-    - stlon-sentinel restart
-    - stlon-keeper restart
-    - stlon-proxy restart
+    - stolon-sentinel restart
+    - stolon-keeper restart
+    - stolon-proxy restart
   tags: stolon,stolon_config
 
 - name: init cluster if needed
   block:
+    - name: check if data directory is empty
+      ansible.builtin.file:
+        path: "{{ stolon_data_dir }}/postgres"
+        state: absent
     - name: check if temporary directory for init exists
       ansible.builtin.file:
         path: "/tmp/stolon"
