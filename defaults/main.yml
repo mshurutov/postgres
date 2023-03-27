@@ -34,7 +34,8 @@ postgres_params_default:
   - { name: port, value: "{{ postgres_client_port }}" }
   - { name: max_connections, value: "100" }
   - { name: password_encryption, value: "{{ postgres_password_encoding }}"}
-  - { name: shared_buffers , value: "{{ (ansible_memtotal_mb/4024+1) | int }}GB" }
+  - { name: lc_messages, value: "POSIX" }
+  - { name: shared_buffers , value: "{{ (ansible_memtotal_mb/4096+1) | int }}GB" }
   - { name: work_mem , value: "16MB" }
   - { name: maintenance_work_mem, value: "1GB" }
   - { name: wal_level, value: "replica" }
