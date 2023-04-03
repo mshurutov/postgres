@@ -11,12 +11,27 @@
   loop: "{{ postgres_params }}"
   notify: postgres restart
   tags: postgres_config
+
+- name: check if installed version of pg_hba.conf exists
+  ansible.builtin.stat:
+    path: "{{ postgres_conf_dir }}/pg_hba.conf.install"
+  register: pg_hba_conf_exist
+  tags: postgres_config
+
+- name: backup installed version of pg_hba.conf
+  ansible.builtin.copy:
+    dest: "{{ postgres_conf_dir }}/pg_hba.conf.install"
+    src: "{{ postgres_conf_dir }}/pg_hba.conf"
+    remote_src: true
+  when: not pg_hba_conf_exist.stat.exists
+
 - name: delete all presettings in pg_hba.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/pg_hba.conf"
     regexp: '^(local|host).*$'
     state: absent
   tags: postgres_config
+
 - name: add prepared lines into pg_hba.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/pg_hba.conf"

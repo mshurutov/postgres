@@ -1,7 +1,18 @@
 ---
 
 # install patroni on new RH-based distros
+- name: set packages from var
+  ansible.builtin.set_fact:
+    yum_packages: "{{ patroni_yum_packages  }}"
+  tags: patroni_install
+
+- name: init consul if need
+  ansible.builtin.include_tasks: dnf-consul.yml
+  when: postgres_cluster_dcs == 'consul'
+  tags: patroni_install
+  
 - name: install patroni on new RH-based distros
   ansible.builtin.dnf:
     name: "{{ patroni_yum_packages }}"
     state: present
+  tags: patroni_install

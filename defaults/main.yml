@@ -28,6 +28,8 @@ postgres_system_user: 'postgres'
 postgres_own_user: "{{ postgres_system_user }}"
 postgres_own_password: "postgresownpwd"
 postgres_client_port: 5432
+postgres_ports:
+  - "{{ postgres_client_port }}"
 postgres_backup_connstring: ''
 postgres_params_default:
   - { name: listen_addresses, value: "'*'" }
@@ -95,9 +97,9 @@ postgres_apt_cluster_name: "main"
 postgres_apt_packages:
   - "postgresql-{{ postgres_major_version }}"
   - "postgresql-contrib"
+  - "python3-psycopg2"
 postgres_templates_apt_dir: "{{ postgres_templates_dir }}/apt"
 patroni_apt_packages:
-  - "python3-psycopg2"
   - "patroni"
 stolon_apt_repo_codename: "bullseye"
 stolon_apt_repo: null
@@ -109,16 +111,17 @@ stolon_apt_packages:
 #postgres_home_dir: "/var/lib/pgsql"
 #postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
 #postgres_conf_dir: "{{ postgres_data_dir }}"
-#postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
+#postgres_bin_dir: "/usr/pgsql-{{ postgres_major_version }}/bin"
 postgres_yum_packages:
  - "postgresql{{ postgres_major_version }}-server"
  - "postgresql{{ postgres_major_version }}-contrib"
+ - "python3-psycopg2"
 patroni_yum_packages:
-  - "python3-psycopg2"
-  - "patroni"
-  - "patroni-etcd"
+ - "patroni-etcd"
 
 # Cluster dependent variables
+# dcs
+etcd_client_port: "2379"
 # patroni
 patroni_scope_name: 'example'
 patroni_user: "{{ postgres_system_user }}"
@@ -175,7 +178,7 @@ stolon_daemons_keeper_options_default:
       # postgresql instance listening address, local address used for the postgres
       # instance. For all network interface, you can set the value to '*'.
   - key: "pg_port"
-    value: "6432"
+    value: "{{ postgres_client_port }}"
     commet: |-
       # postgresql instance listening port (default "5432")
       # I set this option to 6432 because 5432 (default PG port)

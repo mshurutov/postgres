@@ -71,6 +71,6 @@
   ansible.builtin.service:
     name: patroni
     state: started
-  when: ansible_hostname != patroni_master_host
+  when: ansible_hostname != postgres_master_host
   tags: patroni_start
 

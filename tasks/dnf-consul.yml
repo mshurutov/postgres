@@ -1,0 +1,22 @@
+---
+
+# install consul repo and add consul to list of packages
+- name: get hashicorp repo into yum.repos.d
+  ansible.builtin.uri:
+    url: 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo'
+    creates: '/etc/yum.repos.d/hashicorp.repo'
+    tags: postgres_dnf_init
+  tags: patroni_install,stolon_install
+
+- name: add hashicorp repo
+  ansible.builtin.yum_repository:
+    name: 'hashicorp'
+    state: present
+    enables: true
+  tags: patroni_install,stolon_install
+
+- name: add consul to packages list
+  ansible.builtin.set_fact:
+    yum_packages: "{{ yum_packages + consul }}"
+  tags: patroni_install,stolon_install
+

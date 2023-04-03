@@ -5,17 +5,44 @@
   ansible.builtin.dnf:
     name: '*'
     state: latest
+  tags: postgres_dnf_init,postgres_dnf_install
   
+- name: import GPG key for postgres repo
+  ansible.builtin.rpm_key:
+    key: 'https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG'
+    state: present
+  tags: postgres_dnf_init
+
 - name: install repo
   ansible.builtin.dnf:
-    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
     state: present
+  tags: postgres_dnf_init
 
 - name: disable built-in postgresql set of packages
   ansible.builtin.command: dnf -qy module disable postgresql
+  tags: postgres_dnf_init
 
 - name: install postgres
   ansible.builtin.dnf:
     name: "{{ postgres_yum_packages }}"
     state: present
+  tags: postgres_dnf_install
 
+- name: enable service postgres in firewalld
+  ansible.posix.firewalld:
+    service: postgresql
+    permanent: true
+    state: enabled
+    immediate: true
+  tags: postgres_dnf_install
+
+- name: enable nonstandart postgres port in firewalld
+  ansible.posix.firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: item != 5432
+  loop: "{{ postgres_ports }}"
+  tags: postgres_dnf_install

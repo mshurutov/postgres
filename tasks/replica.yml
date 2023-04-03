@@ -1,7 +1,7 @@
 ---
 
 # set replica mode for single host
-- name: set any variables:
+- name: set any variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/single.yml"
 
