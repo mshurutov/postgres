@@ -8,4 +8,3 @@
       - initdb
   environment:
     PGSETUP_INITDB_OPTIONS: "{{ postgres_init_options }}"
-  

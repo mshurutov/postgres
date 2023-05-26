@@ -41,4 +41,3 @@
   loop: "{{ postgres_pg_hba_lines }}"
   notify: postgres reload conf
   tags: postgres_config
-

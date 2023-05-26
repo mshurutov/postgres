@@ -15,4 +15,3 @@
   ansible.builtin.yum:
     name: "{{ postgres_yum_packages }}"
     state: present
-

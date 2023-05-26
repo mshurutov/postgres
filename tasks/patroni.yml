@@ -73,4 +73,3 @@
     state: started
   when: ansible_hostname != postgres_master_host
   tags: patroni_start
-

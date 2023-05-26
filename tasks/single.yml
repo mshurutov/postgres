@@ -35,6 +35,6 @@
     password: "{{ item.password }}"
     role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
   loop:
-    -  { name: "{{ postgres_own_user }}", password: "{{ postgres_own_password }}" }
-    -  { name: "{{ postgres_repl_user }}", password: "{{ postgres_repl_password }}", role_attr_flags: "REPLICATION" }
+    - { name: "{{ postgres_own_user }}", password: "{{ postgres_own_password }}" }
+    - { name: "{{ postgres_repl_user }}", password: "{{ postgres_repl_password }}", role_attr_flags: "REPLICATION" }
   tags: postgres_system_user

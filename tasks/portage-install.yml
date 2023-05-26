@@ -22,4 +22,3 @@
     quiet: yes
     state: latest
   tags: postgres_install
-

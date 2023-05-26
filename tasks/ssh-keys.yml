@@ -66,4 +66,3 @@
     state: absent
   with_fileglob: '/var/tmp/{{ common_short_hostname }}-id_rsa*'
   delegate_to: 127.0.0.1
-

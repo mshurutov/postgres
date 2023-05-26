@@ -23,4 +23,3 @@
 - name: init and start postgres
   ansible.builtin.include_tasks: "{{ postgres_install_mode }}.yml"
   tags: postgres_single,postgres_patroni,postgres_stolon
-
