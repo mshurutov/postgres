@@ -1,5 +1,6 @@
 galaxy_info:
-  role_name: mshurutov.postgres
+  role_name: postgres
+  namespace: mshurutov
   author: Mikhail Shurutov
   description: postgres is multifunctional (single, replica, HA-clusters) role of PostgreSQL.
   company: freelance
