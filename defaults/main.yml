@@ -262,4 +262,3 @@ stolon_init_params_default:
 #        options:
 #          - name: "restoreCommand"
 #            value: "/bin/true"
-

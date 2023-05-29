@@ -74,4 +74,3 @@
   ansible.builtin.service:
     name: stolon-proxy
     state: restarted
-

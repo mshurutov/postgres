@@ -1,6 +1,5 @@
 ---
 
-
 - name: edit postgresql.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/postgresql.conf"
