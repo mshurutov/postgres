@@ -110,8 +110,8 @@ postgresql:
 {% endfor %}
 {% if postgres_params_host is defined %}
   parameters:
-    {{ param.name }}: {{ param.value }}
 {% for param in postgres_params_host %}
+    {{ param.name }}: {{ param.value }}
 {% endfor %}
 {% endif %}
 
