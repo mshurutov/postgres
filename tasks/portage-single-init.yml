@@ -3,18 +3,18 @@
 # init postgresql on gentoo linux
 - name: configure and init instance 
   block:
-    - name: "edit /etc/conf.d/postgresql-{{ PG_MAJOR_VERSION }}"
+    - name: "edit /etc/conf.d/postgresql-{{ postgres_major_version }}"
       ansible.builtin.lineinfile:
-        path: "/etc/conf.d/postgresql-{{ PG_MAJOR_VERSION }}"
+        path: "/etc/conf.d/postgresql-{{ postgres_major_version }}"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         state: present
       loop: "{{ postgres_portage_confd }}"
     - name: initdb of package postgresql
-      ansible.builtin.shell: "emerge --config dev-db/postgresql:{{ PG_MAJOR_VERSION }}"
+      ansible.builtin.shell: "emerge --config dev-db/postgresql:{{ postgres_major_version }}"
     - name: configure systemd unit for postgres
       ansible.builtin.blockinfile:
-        path: "/etc/systemd/system/postgresql-{{ PG_MAJOR_VERSION }}.service.d/override.conf"
+        path: "/etc/systemd/system/postgresql-{{ postgres_major_version }}.service.d/override.conf"
         block: |
           [Service]
           

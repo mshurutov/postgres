@@ -3,6 +3,7 @@
 - name: set any variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/single.yml"
+  tags: postgres_init
 
 - name: init postgres
   block:

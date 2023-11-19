@@ -74,3 +74,9 @@
   ansible.builtin.service:
     name: stolon-proxy
     state: restarted
+
+# restart consul-agent instance
+- name: consul_agent restart
+  ansible.builtin.service:
+    name: "{{ consul_service_name }}"
+    state: restarted

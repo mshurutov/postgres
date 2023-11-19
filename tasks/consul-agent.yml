@@ -1,0 +1,17 @@
+---
+
+# Install consul agent on postgres hosts
+# You should add repo for consul before execute this playbook
+- name: iinstall consul package on postgres hosts
+  ansible.builtin.package:
+    name: "{{ postgres_consul_agent_packages }}"
+    state: present
+  tags: consul_agent,consul_agent_install
+
+- name: configure consul agent
+  ansible.builtin.template:
+    src: "{{ postgres_templates_dir }}/consul-agent.hcl.j2"
+    dest: "{{ postgres_consul_agent_config }}"
+  notify: consul_agent restart
+  validate: /usr/bin/consul validate "{{ postgres_consul_agent_config }}"
+  tags: consul_agent,consul_agent_config

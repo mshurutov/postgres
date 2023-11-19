@@ -20,6 +20,11 @@
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"
   tags: postgres_install
 
+- name: install consul agent when it is needed
+  ansible.builtin.import_tasks: consul-agent.yml
+  when: (postgres_install_mode == 'patroni' || postgres_install_mode == 'stolon') and postgres_cluster_dcs == 'consul'
+  tags: consul_install,consul_config,consul
+
 - name: init and start postgres
   ansible.builtin.include_tasks: "{{ postgres_install_mode }}.yml"
-  tags: postgres_single,postgres_patroni,postgres_stolon
+  tags: postgres_deploy
