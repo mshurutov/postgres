@@ -125,6 +125,10 @@ postgres_yum_packages:
 patroni_yum_packages:
  - "patroni-etcd"
 
+# apt+rpm package manager of Alt Linux
+postgres_apt_rpm_packages:
+  - "postgresql{{ postgres_major_version }}-server"
+
 # Cluster dependent variables
 # dcs
 etcd_client_port: "2379"

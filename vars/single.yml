@@ -1,1 +1,12 @@
-postgres_params: "{{ [postgres_params_default, postgres_params_group_all | default([]), postgres_params_group | default([]), postgres_params_host | default([])] | community.general.lists_mergeby('name',list_merge='append_rp') }}"
+---
+
+postgres_params: "{{
+  [ postgres_params_default,
+    postgres_params_group_all | default([]),
+    postgres_params_supgroup | default([]),
+    postgres_params_group | default([]),
+    postgres_params_subgroup | default([]),
+    postgres_params_host | default([])
+  ] |
+  community.general.lists_mergeby('name',list_merge='append_rp')
+}}"

@@ -1,0 +1,7 @@
+---
+# PostgreSQL installation on Alt Linux
+# apt is package manager and rpm is package format
+- name: Install PostgreSQL
+  community.general.apt_rpm:
+    package: "{{ postgres_apt_rpm_packages }}"
+    update_cache: true
