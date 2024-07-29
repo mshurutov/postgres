@@ -1,7 +1,22 @@
 ---
 # PostgreSQL installation on Alt Linux
 # apt is package manager and rpm is package format
+- name: Add repos
+  ansible.builtin.template:
+    src: "{{ postgres_templates_dir }}/alt_postgres.list.j2"
+    dest: "/etc/apt/sources.list.d/{{ pgrepo.filename }}.list"
+  loop:  "{{ postgres_apt_repos }}"
+  loop_control:
+    loop_var: pgrepo
+  tags: alt_install,alt_repos_install
+
+- name: update package cache
+  community.general.apt_rpm:
+    update_cache: true
+  tags: alt_install,alt_postgres_install
+
 - name: Install PostgreSQL
   community.general.apt_rpm:
-    package: "{{ postgres_apt_rpm_packages }}"
-    update_cache: true
+    package: "{{ item }}"
+  loop: "{{ postgres_apt_rpm_packages }}"
+  tags: alt_install,alt_postgres_install

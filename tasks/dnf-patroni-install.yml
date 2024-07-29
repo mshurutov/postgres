@@ -13,6 +13,6 @@
   
 - name: install patroni on new RH-based distros
   ansible.builtin.dnf:
-    name: "{{ patroni_yum_packages }}"
+    name: "{{ yum_packages }}"
     state: present
   tags: patroni_install

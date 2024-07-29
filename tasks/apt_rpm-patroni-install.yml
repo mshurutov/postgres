@@ -1,0 +1,7 @@
+---
+# Install patroni on Alt Linux
+- name: Install patroni on Alt Linux
+  community.general.apt_rpm:
+    package: "{{ item }}"
+  loop: "{{ patroni_apt_rpm_packages }}"
+  tags: alt_install,alt_postgres_install

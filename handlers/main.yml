@@ -80,3 +80,4 @@
   ansible.builtin.service:
     name: "{{ consul_service_name }}"
     state: restarted
+

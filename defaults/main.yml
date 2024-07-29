@@ -29,8 +29,8 @@ postgres_rewind_user: 'rewinduser'
 postgres_rewind_password: 'rewindpwd'
 # Parameters and options 
 # System parameters
-postgres_kernel_params_default:
-  - { name: vm_swappiness, value: '5' }
+postgres_kernel_params_default: []
+#  - { name: vm_swappiness, value: '5' }
 postgres_password_encoding: "scram-sha-256"
 postgres_init_options: "--encoding=UTF8 --data-checksums"
 postgres_client_port: 5432
@@ -112,6 +112,10 @@ stolon_apt_repo: null
 stolon_apt_packages:
   - "stolon"
 
+# APT+RPM (Alt Linux)
+patroni_apt_rpm_packages:
+  - "patroni"
+
 # YUM/DNF (RedHat, CentOS, Rocky, Oracle)
 #postgres_service_name: "postgresql-{{ postgres_major_version }}"
 #postgres_home_dir: "/var/lib/pgsql"
@@ -133,6 +137,10 @@ postgres_apt_rpm_packages:
 # dcs
 etcd_client_port: "2379"
 # patroni
+patroni_package:
+- "patroni"
+# patroni_systemd_unit_template:
+# patroni_systemd_unit_dir:
 patroni_scope_name: 'example'
 patroni_user: "{{ postgres_system_user }}"
 patroni_group: "{{ patroni_user }}"
