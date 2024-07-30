@@ -20,3 +20,9 @@
     package: "{{ item }}"
   loop: "{{ postgres_apt_rpm_packages }}"
   tags: alt_install,alt_postgres_install
+
+- name: Set alternatives for pgpro
+  ansible.builtin.command:
+    cmd: "{{ postgres_bin_dir }}/pg-wrapper links update"
+  when: "pgpro" in postgres_apt_rpm_packages
+  tags: alt_install,alt_repos_install
