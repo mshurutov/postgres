@@ -15,6 +15,7 @@ postgres_consul_agent_packages: "consul"
 postgres_home_dir: "/var/lib/postgresql"
 postgres_pgpass_file: "{{ postgres_home_dir }}/.pgpass"
 postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
+postgres_conf_file: "{{ postgres_conf_dir }}/postgresql.conf"
 postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
 postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
@@ -137,7 +138,7 @@ postgres_apt_rpm_packages:
 # dcs
 etcd_client_port: "2379"
 # patroni
-patroni_package:
+patroni_packages:
 - "patroni"
 # patroni_systemd_unit_template:
 # patroni_systemd_unit_dir:

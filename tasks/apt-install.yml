@@ -1,5 +1,4 @@
 ---
-
 # install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
 - name: add pgdg repo into apt
   block:

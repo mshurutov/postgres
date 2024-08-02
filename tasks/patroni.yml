@@ -9,11 +9,10 @@
   tags: patroni,patroni_install,patroni_conf,patroni_init,patroni_ssh_keys,patroni_start
 
 - name: install patroni packages
-#  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-patroni-install.yml"
   ansible.builtin.package: 
     name: "{{ item }}"
     state: present
-  loop: "{{ patroni_package }}"
+  loop: "{{ patroni_packages }}"
   tags: patroni,patroni_install
 
 - name: check if config dir exists

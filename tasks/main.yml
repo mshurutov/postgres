@@ -1,7 +1,7 @@
 ---
 # tasks file for postgres
 # set any variables
-- name: set base variables
+- name: set distro independent base variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/main.yml"
   tags: postgres_init
