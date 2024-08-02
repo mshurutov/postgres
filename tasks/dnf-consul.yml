@@ -1,6 +1,0 @@
----
-
-- name: add consul to packages list
-  ansible.builtin.set_fact:
-    yum_packages: "{{ yum_packages + consul }}"
-  tags: patroni_install,stolon_install
