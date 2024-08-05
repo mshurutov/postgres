@@ -13,7 +13,7 @@
     sysctl_set: true
     state: present 
   loop: "{{ postgres_kernel_params }}"
-  tags: postgres_init
+  tags: postgres_init,postgres_deploy
 
 - name: install lsb-release package
   ansible.builtin.package:

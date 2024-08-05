@@ -8,6 +8,7 @@
   loop:  "{{ postgres_apt_repos }}"
   loop_control:
     loop_var: pgrepo
+  when: postgres_apt_repos is defined and postgres_apt_repos | length > 0
   tags: alt_install,alt_repos_install
 
 - name: update package cache

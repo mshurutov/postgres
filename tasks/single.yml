@@ -3,7 +3,7 @@
 - name: set any variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/single.yml"
-  tags: postgres_init
+  tags: postgres_single_init,postgres_config
 
 - name: init postgres
   block:
@@ -11,10 +11,10 @@
       ansible.builtin.file:
         path: "{{ postgres_data_dir }}"
         state: absent
-      tags: postgres_init
+      tags: postgres_single_init
     - name: run initdb command by wrapper
       ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-{{ postgres_install_mode }}-init.yml"
-      tags: postgres_init
+      tags: postgres_single_init
   when: postgres_init_force is defined and postgres_init_force | bool
 
 - name: edit configs
