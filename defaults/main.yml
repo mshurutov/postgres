@@ -28,6 +28,14 @@ postgres_repl_user: 'repluser'
 postgres_repl_password: 'replpwd'
 postgres_rewind_user: 'rewinduser'
 postgres_rewind_password: 'rewindpwd'
+postgres_init_users: []
+#- name: "{{ postgres_own_user }}"
+#  password: "{{ postgres_own_password }}"
+#- name: "{{ postgres_repl_user }}"
+#  password: "{{ postgres_repl_password }}"
+#  role_attr_flags: "REPLICATION"
+#- name: "{{ postgres_rewind_user }}"
+#  password: "{{ postgres_rewind_password }}"
 # Parameters and options 
 # System parameters
 postgres_kernel_params_default: []
