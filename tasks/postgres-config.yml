@@ -3,7 +3,7 @@
 - name: edit postgresql.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_file }}"
-    regexp: '^#?\s*{{ item.name }}[^#]*(\s+#.*)$'
+    regexp: '^#?\s*{{ item.name }}[^#]*(\s+#.*)?$'
     line: '{{ item.name }} = {{ item.value }}\1'
     state: present
     backrefs: yes
