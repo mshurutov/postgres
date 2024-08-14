@@ -19,6 +19,29 @@ postgres_conf_file: "{{ postgres_conf_dir }}/postgresql.conf"
 postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
 postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
 postgres_service_name: "postgresql-{{ postgres_major_version }}"
+# postgres_init_command is distro depended command and should be defined for your distro
+#postgres_init_command:
+# postgres_init_env is used only on dnf-based distros
+#postgres_init_env:
+# postgres_init_config: on gentoo {{ postgres_init_command }} get settings from config
+# that is placed on /etc/conf.d/postgresql-{{ postgres_major_version }}
+#postgres_init_config:
+#  filename: "/etc/conf.d/postgresql-{{ postgres_major_version }}"
+#  options:
+#  - regexp: '^PGDATA="/etc/postgresq.*'
+#    line: 'PGDATA="{{ postgres_conf_dir }}"'
+#  - regexp: '^PG_INITDB_OPTS=.*'
+#    line: 'PG_INITDB_OPTS="--encoding=UTF8 {{ postgres_init_options }}"'
+# Overrides for systemd unit file
+#pg_systemd_unit:
+#- name: Service
+#  settings:
+#  - name: "Environment"
+#    value: "PGPORT={{ postgres_client_port }}"
+#  - name: "Environment"
+#    value: "PGDATA={{ postgres_conf_dir }}"
+#  - name: "Environment"
+#    value: "DATA_DIR={{ postgres_data_dir }}"
 postgres_recovery_conf: "postgresql.conf"
 # Default system and instance users and its passwords. The passwords must be changed.
 postgres_system_user: 'postgres'
@@ -97,10 +120,6 @@ postgres_cluster_dcs: "etcd"
 portage_accept_keywords_file: "/etc/portage/package.accept_keywords/package.all"
 postgres_portage_packages: "dev-db/postgresql:{{ postgres_major_version }}"
 postgres_portage_confd:
-  - regexp: '^PGDATA="/etc/postgresq.*'
-    line: 'PGDATA="{{ postgres_conf_dir }}"'
-  - regexp: '^PG_INITDB_OPTS=.*'
-    line: 'PG_INITDB_OPTS="--encoding=UTF8 {{ postgres_init_options }}"'
 
 # APT variables (Debian, [KLX]?Ubuntu, Mint, and other deb-based distros)
 postgres_apt_cluster_name: "main"

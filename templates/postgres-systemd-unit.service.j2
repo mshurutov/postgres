@@ -1,0 +1,13 @@
+# PostgresSQL systemd unit file override
+# This file is managed by ansible.
+# Don not edit it manually!
+{% for section in pg_systemd_unit %}
+
+[{{ section.name }}]
+{% if section.comment is defined %}
+{{ section.comment }}
+{% endif %}
+{% for setting in section.settings %}
+{{ setting.name }}={{ setting.value }}
+{% endfor %}
+{% endfor %}
