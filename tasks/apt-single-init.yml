@@ -1,7 +1,0 @@
----
-
-# postgres init of APT distros
-- name: init postgres on DEB-like distros
-  ansible.builtin.command: /usr/bin/pg_createcluster {{ postgres_major_version }} {{ postgres_apt_cluster_name }} -- {{ postgres_init_options }}
-  args:
-    creates: "{{ postgres_apt_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
