@@ -1,5 +1,4 @@
 ---
-
 # set replica mode for single host
 - name: set any variables
   ansible.builtin.include_vars:
@@ -33,10 +32,10 @@
   ansible.builtin.lineinfile:
     path: "{{ postgres_home_dir }}/.pgpass"
     line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
-    create: true
     owner: "{{ postgres_system_user }}"
     group: "{{ postgres_system_user }}"
     mode: 0600
+    create: true
     state: "present"
   tags: replica_init
 
@@ -66,6 +65,7 @@
     regexp: '^#?\s*{{ item.name }}[^#]*(\s*#?.*)$'
     line: '{{ item.name }} = {{ item.value }} \1'
     backrefs: yes
+    create: true
     state: present
   loop: "{{ postgres_recovery_params }}"
   notify: postgres start

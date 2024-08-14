@@ -1,5 +1,4 @@
 ---
-
 # Tasks for create stolon PostgreSQL cluster
 - name: set any common variables
   ansible.builtin.include_vars:

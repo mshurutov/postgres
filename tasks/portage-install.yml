@@ -1,5 +1,4 @@
 ---
-
 # install postgresql into gentoo linux
 - name: config portage before install postgres
   block:
@@ -7,11 +6,13 @@
     ansible.builtin.lineinfile:
       path: "{{ portage_accept_keywords_file }}"
       line: "dev-db/postgresql"
+      create: true
       state: present
   - name: check if needed USE-flags is defined
     ansible.builtin.lineinfile:
       path: "{{ portage_use_file }}"
       line: "dev-db/postgres {{ postgres_use_flags }}"
+      create: true
       state: present
     when: portage_use_flags is defined
   tags: postgres_portage_conf

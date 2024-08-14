@@ -27,6 +27,7 @@
       path: "{{ postgres_init_config.filename }}"
       regexp: "{{ item.regexp }}"
       line: "{{ item.line }}"
+      create: true
       state: present
     loop: "{{ postgres_init_config.options }}"
     when: postgres_init_config is defined and postgres_init_config | length > 0

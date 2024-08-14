@@ -1,5 +1,4 @@
 ---
-
 # generate and put ssh-keys on cluster hosts
 - name: generate ssh-keys for every host of cluster
   community.crypto.openssh_keypair:
