@@ -1,5 +1,4 @@
 ---
-
 # defaults file for postgres
 # common variable for role
 # role files and directories definition
@@ -169,6 +168,7 @@ patroni_packages:
 - "patroni"
 # patroni_systemd_unit_template:
 # patroni_systemd_unit_dir:
+patroni_etcd_proto_version: "etcd3"
 patroni_scope_name: 'example'
 patroni_user: "{{ postgres_system_user }}"
 patroni_group: "{{ patroni_user }}"

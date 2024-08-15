@@ -1,5 +1,5 @@
 # etcdv3 settings
-etcd3:
+{{ patroni_etcd_proto_version }}:
   hosts: {% for eh in groups[postgres_dcs_groups] %}{{ hostvars[eh]['common_full_hostname'] }}:{{ etcd_client_port }}{% if not loop.last %},{% endif %}{% endfor %} 
 {#
   # parameter hosts is minimal required, other parameters will be defined later
