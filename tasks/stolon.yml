@@ -1,20 +1,20 @@
 ---
 # Tasks for create stolon PostgreSQL cluster
-- name: set any common variables
+- name: Set any common variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/cluster.yml"
   tags: postgres_cluster,stolon_init,stolon_config,stolon_create
 
-- name: set any stolon variables
+- name: Set any stolon variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/stolon.yml"
   tags: postgres_cluster,stolon_init,stolon_config,stolon_create
 
-- name: install stolon packages
+- name: Install stolon packages
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-stolon-install.yml"
   tags: stolon,stolon_install
 
-- name: set parameters for stolon daemons
+- name: Set parameters for stolon daemons
   ansible.builtin.template:
     src: "{{ postgres_templates_dir }}/stolon.settings.j2"
     dest: "{{ stolon_daemons_config_file }}"
@@ -24,18 +24,18 @@
     - stolon-proxy restart
   tags: stolon,stolon_config
 
-- name: init cluster if needed
+- name: Init cluster if needed
   block:
-    - name: check if data directory is empty
+    - name: Check if data directory is empty
       ansible.builtin.file:
         path: "{{ stolon_data_dir }}/postgres"
         state: absent
-    - name: check if temporary directory for init exists
+    - name: Check if temporary directory for init exists
       ansible.builtin.file:
         path: "/tmp/stolon"
         state: directory
       tags: stolon,stolon_config,stolon_create
-    - name: copy initial config
+    - name: Copy initial config
       ansible.builtin.template:
         src: "{{ item.file }}"
         dest: "/tmp/stolon/{{ item.file | basename | regex_replace('.j2') }}"
@@ -44,19 +44,19 @@
         - { file: "{{ postgres_templates_dir }}/stolon-init-config.json.j2", mode: '0644' }
         - { file: "{{ postgres_templates_dir }}/stolon-init.sh.j2", mode: '0755' }
       tags: stolon,stolon_create
-    - name: init stolon cluster
+    - name: Init stolon cluster
       ansible.builtin.command: /tmp/stolon/stolon-init.sh
       args:
         chdir: "/tmp/stolon"
       tags: stolon,stolon_create
-    - name: delete temporary directory for init
+    - name: Delete temporary directory for init
       ansible.builtin.file:
         path: "/tmp/stolon"
         state: absent
       tags: stolon,stolon_create
   when: ansible_fqdn == postgres_master_host and stolon_init_force is defined and stolon_init_force | bool
 
-- name: check if data directory for keeper exists
+- name: Check if data directory for keeper exists
   ansible.builtin.file:
     path: "{{ stolon_data_dir }}"
     state: directory
@@ -64,7 +64,7 @@
     group: "{{ postgres_system_user }}"
   tags: stolon,stolon_config
 
-- name: create pgpass files
+- name: Create pgpass files
   ansible.builtin.template:
     src: "{{ item.template }}"
     dest: "{{ item.file }}"
@@ -76,14 +76,14 @@
     - { file: "{{ stolon_repl_pgpassfile }}", template: "{{ postgres_templates_dir }}/stolon-repluser-pwdfile.j2" }
   tags: stolon,stolon_config
 
-- name: start and enable sentinel daemons on all nodes
+- name: Start and enable sentinel daemons on all nodes
   ansible.builtin.service:
     name: stolon-sentinel
     state: started
     enabled: yes
   tags: stolon,stolon_start
 
-- name: start and enable keeper on master node
+- name: Start and enable keeper on master node
   ansible.builtin.service:
     name: stolon-keeper
     state: started
@@ -91,14 +91,14 @@
   when: ansible_fqdn == postgres_master_host
   tags: stolon,stolon_start
 
-- name: wait for master will be started
+- name: Wait for master will be started
   ansible.builtin.wait_for:
     host: "{{ postgres_master_host }}"
     port: "{{ postgres_client_port }}"
     state: started
   tags: stolon,stolon_start
 
-- name: start and enable keeper on other hosts
+- name: Start and enable keeper on other hosts
   ansible.builtin.service:
     name: stolon-keeper
     state: started
@@ -106,7 +106,7 @@
   when: ansible_fqdn != postgres_master_host
   tags: stolon,stolon_start
 
-- name: start and enable proxy
+- name: Start and enable proxy
   ansible.builtin.service:
     name: stolon-proxy
     state: started

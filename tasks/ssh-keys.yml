@@ -1,6 +1,6 @@
 ---
 # generate and put ssh-keys on cluster hosts
-- name: generate ssh-keys for every host of cluster
+- name: Generate ssh-keys for every host of cluster
   community.crypto.openssh_keypair:
     path: "/var/tmp/{{ common_short_hostname }}-id_rsa"
     size: 2048
@@ -9,7 +9,7 @@
     mode: 0644
   delegate_to: 127.0.0.1
 
-- name: create .ssh dir for postgres
+- name: Create .ssh dir for postgres
   ansible.builtin.file:
     path: "{{ postgres_home_dir }}/.ssh"
     state: directory
@@ -17,7 +17,7 @@
     group: "{{ postgres_system_user }}"
     mode: 0700
 
-- name: check if id_rsa keypair is not exists
+- name: Check if id_rsa keypair is not exists
   ansible.builtin.file:
     path: "{{ postgres_home_dir }}/.ssh/{{ item }}"
     state: absent
@@ -27,7 +27,7 @@
     - "known_hosts"
     - "authorized_keys"
   
-- name: copy ssh-keys to target host
+- name: Copy ssh-keys to target host
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ postgres_home_dir }}/.ssh/{{ item | basename | regex_replace(common_short_hostname + '-','') }}"
@@ -36,14 +36,14 @@
     mode: 0600
   with_fileglob: '/var/tmp/{{ common_short_hostname }}-id_rsa*'
 
-- name: create authorized key for postgres 
+- name: Create authorized key for postgres 
   ansible.posix.authorized_key:
     user: "{{ postgres_system_user }}"
     state: present
     key: "{{ lookup('ansible.builtin.file', item) }}"
   with_fileglob: '/var/tmp/*id_rsa.pub'
 
-- name: create known_hosts for postgres
+- name: Create known_hosts for postgres
   ansible.builtin.known_hosts:
     hash_host: true
     path: "{{ postgres_home_dir }}/.ssh/known_hosts"
@@ -59,7 +59,7 @@
     group: "{{ postgres_system_user }}"
     mode: 0600
   
-- name: delete generated files
+- name: Delete generated files
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent

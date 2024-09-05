@@ -1,6 +1,6 @@
 ---
 # configure postgres
-- name: edit postgresql.conf
+- name: Edit postgresql.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_file }}"
     regexp: '^#?\s*{{ item.name }}[^#]*(\s+#.*)?$'
@@ -12,13 +12,13 @@
   notify: postgres restart
   tags: postgres_config,postgresql_conf
 
-- name: check if installed version of pg_hba.conf exists
+- name: Check if installed version of pg_hba.conf exists
   ansible.builtin.stat:
     path: "{{ postgres_conf_dir }}/pg_hba.conf.install"
   register: pg_hba_conf_exist
   tags: postgres_config,pg_hba_conf
 
-- name: backup installed version of pg_hba.conf
+- name: Backup installed version of pg_hba.conf
   ansible.builtin.copy:
     dest: "{{ postgres_conf_dir }}/pg_hba.conf.install"
     src: "{{ postgres_conf_dir }}/pg_hba.conf"
@@ -26,14 +26,14 @@
   when: not pg_hba_conf_exist.stat.exists
   tags: postgres_config,pg_hba_conf
 
-- name: delete all presettings in pg_hba.conf
+- name: Delete all presettings in pg_hba.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/pg_hba.conf"
     regexp: '^(local|host).*$'
     state: absent
   tags: postgres_config,pg_hba_conf
 
-- name: add prepared lines into pg_hba.conf
+- name: Add prepared lines into pg_hba.conf
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/pg_hba.conf"
     line: "{{ item }}"

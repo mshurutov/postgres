@@ -1,12 +1,22 @@
 ---
+- name: Check if ansible version is equal or greater than 2.11
+  ansible.builtin.fail:
+    msg: "Ansible core should be equal or greater than 2.11"
+  when: ansible_version.full is ansible.builtin.version('2.11','<')
+
+- name: Check if python is equal or greater than 3
+  ansible.builtin.fail:
+    msg: "Python should be equal or greater than 3"
+  when: ansible_python.version.major is ansible.builtin.version('3','<')
+
 # tasks file for postgres
 # set any variables
-- name: set distro independent base variables
+- name: Set distro independent base variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/main.yml"
   tags: postgres_init
 
-- name: set kernel parameters
+- name: Set kernel parameters
   ansible.posix.sysctl:
     name: "{{ item.name | regex_replace('_','.') }}"
     value: "{{ item.value }}"
@@ -15,21 +25,21 @@
   loop: "{{ postgres_kernel_params }}"
   tags: postgres_init,postgres_deploy
 
-- name: install lsb-release package
+- name: Install lsb-release package
   ansible.builtin.package:
     name: "{{ common_lsb_package }}"
     state: present
   tags: postgres_install
 
-- name: install postgres
+- name: Install postgres
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"
   tags: postgres_install
 
-- name: install consul agent when it is needed
+- name: Install consul agent when it is needed
   ansible.builtin.import_tasks: consul-agent.yml
   when: (postgres_install_mode == 'patroni' or postgres_install_mode == 'stolon') and postgres_cluster_dcs == 'consul'
   tags: consul_install,consul_config,consul
 
-- name: init and start postgres
+- name: Init and start postgres
   ansible.builtin.include_tasks: "{{ postgres_install_mode }}.yml"
   tags: postgres_deploy

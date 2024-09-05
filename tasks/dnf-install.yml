@@ -1,35 +1,34 @@
 ---
-
 # install postgres into redhat and its children distros (CentOS, Rocky, Oracle)
-- name: upgrade minor system version before install postgres
+- name: Upgrade minor system version before install postgres
   ansible.builtin.dnf:
     name: '*'
     state: latest
   tags: postgres_dnf_init,postgres_dnf_install
   
-- name: import GPG key for postgres repo
+- name: Import GPG key for postgres repo
   ansible.builtin.rpm_key:
     key: 'https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG'
     state: present
   tags: postgres_dnf_init
 
-- name: install repo
+- name: Install repo
   ansible.builtin.dnf:
     name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
     state: present
   tags: postgres_dnf_init
 
-- name: disable built-in postgresql set of packages
+- name: Disable built-in postgresql set of packages
   ansible.builtin.command: dnf -qy module disable postgresql
   tags: postgres_dnf_init
 
-- name: install postgres
+- name: Install postgres
   ansible.builtin.dnf:
     name: "{{ postgres_yum_packages }}"
     state: present
   tags: postgres_dnf_install
 
-- name: enable service postgres in firewalld
+- name: Enable service postgres in firewalld
   ansible.posix.firewalld:
     service: postgresql
     permanent: true
@@ -37,7 +36,7 @@
     immediate: true
   tags: postgres_dnf_install
 
-- name: enable nonstandart postgres port in firewalld
+- name: Enable nonstandart postgres port in firewalld
   ansible.posix.firewalld:
     port: "{{ item }}/tcp"
     permanent: true

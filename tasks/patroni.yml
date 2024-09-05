@@ -1,21 +1,19 @@
 ---
-
 # Main config for patroni+any DCS cluster
 # any DCS variables must be defined
-
-- name: set any variables
+- name: Set any variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/cluster.yml"
   tags: patroni,patroni_install,patroni_conf,patroni_init,patroni_ssh_keys,patroni_start
 
-- name: install patroni packages
+- name: Install patroni packages
   ansible.builtin.package: 
     name: "{{ item }}"
     state: present
   loop: "{{ patroni_packages }}"
   tags: patroni,patroni_install
 
-- name: check if config dir exists
+- name: Check if config dir exists
   ansible.builtin.file:
     path: "{{ patroni_config_dir }}"
     owner: "{{ patroni_user }}"
@@ -24,7 +22,7 @@
     state: directory
   tags: patroni,patroni_conf
 
-- name: copy config to target system
+- name: Copy config to target system
   ansible.builtin.template:
     src: "{{ postgres_templates_dir }}/patroni.yml.j2"
     dest: "{{ patroni_config_file }}"
@@ -33,60 +31,60 @@
     mode: 0600
   tags: patroni,patroni_conf
 
-- name: set patroni systemd unit file
+- name: Set patroni systemd unit file
   block:
-  - name: check if systemd unit files directrory exists
+  - name: Check if systemd unit files directrory exists
     ansible.builtin.file:
       path: "{{ common_systemd_unit_dir }}"
       state: "directory"
-  - name: copy patroni systemd unit file into systemd unit files directory
+  - name: Copy patroni systemd unit file into systemd unit files directory
     ansible.builtin.template:
       dest: "{{ common_systemd_unit_dir }}/patroni.service"
       src: "{{ patroni_systemd_unit_template }}"
-  - name: systemd daemon reload
+  - name: Systemd daemon reload
     ansible.builtin.systemd_service:
       daemon_reload: true
   when: ansible_service_mgr == "systemd" and patroni_systemd_unit_template is defined and patroni_systemd_unit_template | length > 0
   tags: patroni,patroni_conf
 
-- name: delete exists postgres data directory
+- name: Delete exists postgres data directory
   block:
-    - name: stop postgresql service
+    - name: Stop postgresql service
       ansible.builtin.service:
         name: "{{ postgres_service_name }}"
         state: stopped
         enabled: false
-    - name: stop patroni service
+    - name: Stop patroni service
       ansible.builtin.service:
         name: patroni
         state: stopped
-    - name: clean postgres data dir
+    - name: Clean postgres data dir
       ansible.builtin.file:
         path: "{{ postgres_data_dir }}"
         state: absent
   when: patroni_init_force is defined and patroni_init_force | bool
   tags: patroni,patroni_init
   
-- name: setup ssh keys on cluster nodes
+- name: Setup ssh keys on cluster nodes
   ansible.builtin.import_tasks: "ssh-keys.yml"
   when: ssh_keys_create_force is defined and ssh_keys_create_force | bool
   tags: patroni,patroni_ssh_keys
 
-- name: start patroni on master
+- name: Start patroni on master
   ansible.builtin.service:
     name: patroni
     state: started
   when: ansible_fqdn == postgres_master_host
   tags: patroni_start
 
-- name: wait for master will be started
+- name: Wait for master will be started
   ansible.builtin.wait_for:
     host: "{{ postgres_master_host }}"
     port: "{{ postgres_client_port }}"
     state: started
   tags: patroni,patroni_start
 
-- name: start other hosts of the cluster
+- name: Start other hosts of the cluster
   ansible.builtin.service:
     name: patroni
     state: started

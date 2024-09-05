@@ -1,28 +1,28 @@
 ---
 ### Init, configure and start single postgres
 # Set variables for single mode
-- name: set any variables
+- name: Set any variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/single.yml"
   tags: postgres_single_init,postgres_config
 
 ### Init is destructive procedure if instance of {{ postgres_major_version }}
 ### is jet installed and inited
-- name: init postgres
+- name: Init postgres
   block:
 # first postgres should be stopped
-  - name: postgres stop
+  - name: Postgres stop
     ansible.builtin.service:
       name: "{{ postgres_service_name }}"
       state: stopped
 # second PGDATA should be clean or not to be
-  - name: clean postgres data dir
+  - name: Clean postgres data dir
     ansible.builtin.file:
       path: "{{ postgres_data_dir }}"
       state: absent
     tags: postgres_single_init
 # configure init if need
-  - name: configure init
+  - name: Configure init
     ansible.builtin.lineinfile:
       path: "{{ postgres_init_config.filename }}"
       regexp: "{{ item.regexp }}"
@@ -32,20 +32,20 @@
     loop: "{{ postgres_init_config.options }}"
     when: postgres_init_config is defined and postgres_init_config | length > 0
 # init of instance
-  - name: run initdb command by wrapper
+  - name: Run initdb command by wrapper
     block:
 # init on non-RedHat-based/like distros
-    - name: simple init command
+    - name: Simple init command
       ansible.builtin.command: "{{ postgres_init_command }}"
       when: ansible_os_family != "RedHat"
 # init on RedHat-based/like distros
-    - name: init command with environment
+    - name: Init command with environment
       ansible.builtin.command: "{{ postgres_init_command }}"
       environment:
         PGSETUP_INITDB_OPTIONS: "{{ postgres_init_options }}"
       when: ansible_os_family == "RedHat"
 # edit unit-file for postgres systemd service
-  - name: edit postgres systemd unit file
+  - name: Edit postgres systemd unit file
     ansible.builtin.template:
       dest: "/etc/systemd/system/{{ postgres_service_name }}.service.d/override.conf"
       src: "{{ postgres_templates_dir }}/postgres-systemd-unit.service.j2"
@@ -53,18 +53,18 @@
   tags: postgres_single_init
   when: postgres_init_force is defined and postgres_init_force | bool
 
-- name: edit configs
+- name: Edit configs
   ansible.builtin.import_tasks: "postgres-config.yml"
   tags: postgres_config
 
-- name: postgres start
+- name: Postgres start
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: started
   notify: postgres enable
   tags: postgres_start
 
-- name: create postgres system users
+- name: Create postgres system users
   become: true
   become_user: 'postgres'
   community.postgresql.postgresql_user:

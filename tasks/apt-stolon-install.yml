@@ -1,7 +1,6 @@
 ---
-
 # Install stolon on deb-based distro
-- name: set stolon repo
+- name: Set stolon repo
   ansible.builtin.apt_repository:
     codename: "{{ stolon_apt_repo_codename }}"
     filename: "stolon"
@@ -9,7 +8,7 @@
     update_cache: false
   tags: stolon,stolon_install
 
-- name: install stolon package
+- name: Install stolon package
   ansible.builtin.apt:
     name: "stolon"
     state: present
