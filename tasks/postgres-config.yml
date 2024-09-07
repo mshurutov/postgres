@@ -7,9 +7,10 @@
     line: '{{ item.name }} = {{ item.value }}\1'
     create: true
     state: present
-    backrefs: yes
+    backrefs: true
+    mode: "0600"
   loop: "{{ postgres_params }}"
-  notify: postgres restart
+  notify: Postgres restart
   tags: postgres_config,postgresql_conf
 
 - name: Check if installed version of pg_hba.conf exists
@@ -23,6 +24,7 @@
     dest: "{{ postgres_conf_dir }}/pg_hba.conf.install"
     src: "{{ postgres_conf_dir }}/pg_hba.conf"
     remote_src: true
+    mode: preserve
   when: not pg_hba_conf_exist.stat.exists
   tags: postgres_config,pg_hba_conf
 
@@ -40,6 +42,7 @@
     create: true
     state: present
     insertafter: EOF
+    mode: "0600"
   loop: "{{ postgres_pg_hba_lines }}"
-  notify: postgres reload conf
+  notify: Postgres reload conf
   tags: postgres_config,pg_hba_conf

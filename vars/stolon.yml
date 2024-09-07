@@ -1,51 +1,45 @@
 ---
-
 # Build and set any stolon variables
 stolon_daemons_common_options: "{{
-  [ stolon_daemons_common_options_default | default([]),
+  [stolon_daemons_common_options_default | default([]),
     stolon_daemons_common_options_group_all | default([]),
     stolon_daemons_common_options_supgroup | default([]),
     stolon_daemons_common_options_group | default([]),
-    stolon_daemons_common_options_subgroup | default([])
-  ] |
-  community.general.lists_mergeby('key',recursive=true,list_merge='append_rp')
+    stolon_daemons_common_options_subgroup | default([])] |
+  community.general.lists_mergeby('key', recursive=true, list_merge='append_rp')
 }}"
 stolon_daemons_sentinel_options: "{{
-  [ stolon_daemons_sentinel_options_default | default([]),
+  [stolon_daemons_sentinel_options_default | default([]),
     stolon_daemons_sentinel_options_group_all | default([]),
     stolon_daemons_sentinel_options_supgroup | default([]),
     stolon_daemons_sentinel_options_group | default([]),
-    stolon_daemons_sentinel_options_subgroup | default([])
-  ] | 
-  community.general.lists_mergeby('key',recursive=true,list_merge='append_rp')
+    stolon_daemons_sentinel_options_subgroup | default([])] |
+  community.general.lists_mergeby('key', recursive=true, list_merge='append_rp')
 }}"
 stolon_daemons_keeper_options: "{{
-  [ stolon_daemons_keeper_options_default | default([]),
+  [stolon_daemons_keeper_options_default | default([]),
     stolon_daemons_keeper_options_group_all | default([]),
     stolon_daemons_keeper_options_supgroup | default([]),
     stolon_daemons_keeper_options_group | default([]),
-    stolon_daemons_keeper_options_subgroup | default([])
-  ] |
-  community.general.lists_mergeby('key',recursive=true,list_merge='append_rp')
+    stolon_daemons_keeper_options_subgroup | default([])] |
+  community.general.lists_mergeby('key', recursive=true, list_merge='append_rp')
 }}"
 stolon_daemons_proxy_options: "{{
-  [ stolon_daemons_proxy_options_default | default([]),
+  [stolon_daemons_proxy_options_default | default([]),
     stolon_daemons_proxy_options_group_all | default([]),
     stolon_daemons_proxy_options_supgroup | default([]),
     stolon_daemons_proxy_options_group | default([]),
-    stolon_daemons_proxy_options_subgroup | default([])
-  ] |
-  community.general.lists_mergeby('key',recursive=true,list_merge='append_rp')
+    stolon_daemons_proxy_options_subgroup | default([])] |
+  community.general.lists_mergeby('key', recursive=true, list_merge='append_rp')
 }}"
 stolon_init_params: "{{
-  [ stolon_init_params_default | default([]),
+  [stolon_init_params_default | default([]),
     stolon_init_params_group_all | default([]),
     stolon_init_params_supgroup | default([]),
     stolon_init_params_group | default([]),
-    stolon_init_params_subgroup | default([])
-  ] |
-  community.general.lists_mergeby('key',recursive=true,list_merge='append_rp')
+    stolon_init_params_subgroup | default([])] |
+  community.general.lists_mergeby('key', recursive=true, list_merge='append_rp')
 }}"
-#stolon_daemons_sentinel_options_default
-#stolon_daemons_keeper_options_default
-#stolon_daemons_proxy_options_default
+# stolon_daemons_sentinel_options_default
+# stolon_daemons_keeper_options_default
+# stolon_daemons_proxy_options_default

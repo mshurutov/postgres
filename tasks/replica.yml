@@ -17,6 +17,7 @@
   tags: replica_init
 
 - name: Init postgres for distros where postgres_conf_dir != postgres_data_dir
+  when: replica_init_force is defined and replica_init_force | bool
   block:
     - name: Init PG
       ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-single-init.yml"
@@ -26,7 +27,6 @@
         path: "{{ postgres_data_dir }}"
         state: absent
       tags: replica_init
-  when: replica_init_force is defined and replica_init_force | bool
 
 - name: Add replica user into ~/.pgpass file of sysuser postgres
   ansible.builtin.lineinfile:
@@ -34,39 +34,42 @@
     line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
     owner: "{{ postgres_system_user }}"
     group: "{{ postgres_system_user }}"
-    mode: 0600
+    mode: "0600"
     create: true
     state: "present"
   tags: replica_init
 
 - name: Copy backup to host
+  tags: replica_init
   block:
     - name: Create basebackup from master host
-      become: yes
+      become: true
       become_user: "{{ postgres_system_user }}"
       ansible.builtin.command: "pg_basebackup -D {{ postgres_data_dir }} -X stream -R {{ postgres_backup_connstring }}"
+      changed_when: true
       when: postgres_replica_init == 'from_master'
     - name: Copy backup from backup host
-      become: yes
+      become: true
       become_user: "{{ postgres_system_user }}"
       ansible.builtin.command: "scp -r {{ postgres_backup_host }}:/{{ postgres_backup_dir }} {{ postgres_data_dir }}"
+      changed_when: true
       when: postgres_replica_init == 'from_backup'
-  tags: replica_init
 
 - name: Edit configs
   ansible.builtin.import_tasks: "postgres-config.yml"
   tags: replica_init
 
 - name: Configure replica
-  become: yes
+  become: true
   become_user: "{{ postgres_system_user }}"
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/{{ postgres_recovery_conf }}"
     regexp: '^#?\s*{{ item.name }}[^#]*(\s*#?.*)$'
     line: '{{ item.name }} = {{ item.value }} \1'
-    backrefs: yes
+    backrefs: true
     create: true
     state: present
+    mode: "0600"
   loop: "{{ postgres_recovery_params }}"
-  notify: postgres start
+  notify: Postgres start
   tags: replica_init,postgres_start

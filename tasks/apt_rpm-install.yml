@@ -5,7 +5,8 @@
   ansible.builtin.template:
     src: "{{ postgres_templates_dir }}/alt_postgres.list.j2"
     dest: "/etc/apt/sources.list.d/{{ pgrepo.filename }}.list"
-  loop:  "{{ postgres_apt_repos }}"
+    mode: "0644"
+  loop: "{{ postgres_apt_repos }}"
   loop_control:
     loop_var: pgrepo
   when: postgres_apt_repos is defined and postgres_apt_repos | length > 0
@@ -25,5 +26,6 @@
 - name: Set alternatives for pgpro
   ansible.builtin.command:
     cmd: "{{ postgres_bin_dir }}/pg-wrapper links update"
+  changed_when: true
   when: postgres_apt_rpm_packages is search("postgrespro")
   tags: alt_install,alt_pgpro_config

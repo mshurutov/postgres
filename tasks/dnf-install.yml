@@ -4,8 +4,9 @@
   ansible.builtin.dnf:
     name: '*'
     state: latest
+    update_only: true
   tags: postgres_dnf_init,postgres_dnf_install
-  
+
 - name: Import GPG key for postgres repo
   ansible.builtin.rpm_key:
     key: 'https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG'
@@ -20,6 +21,7 @@
 
 - name: Disable built-in postgresql set of packages
   ansible.builtin.command: dnf -qy module disable postgresql
+  changed_when: true
   tags: postgres_dnf_init
 
 - name: Install postgres

@@ -1,20 +1,21 @@
 ---
 # install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
 - name: Add pgdg repo into apt
-  block:
-  - name: Add pgdg repo gpg key
-    ansible.builtin.apt_key:
-      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-      state: present
-    #loop: "{{ postgres_apt_gpgkeys }}"
-  - name: Add repo into config file
-    ansible.builtin.template:
-      src: "{{ postgres_templates_apt_dir }}/pgdg.list.j2"
-      dest: /etc/apt/sources.list.d/pgdg.list
-  - name: Update package cache
-    ansible.builtin.apt:
-      update_cache: yes
   tags: postgres_apt,postgres_apt_init
+  block:
+    - name: Add pgdg repo gpg key
+      ansible.builtin.apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+      # loop: "{{ postgres_apt_gpgkeys }}"
+    - name: Add repo into config file
+      ansible.builtin.template:
+        src: "{{ postgres_templates_apt_dir }}/pgdg.list.j2"
+        dest: /etc/apt/sources.list.d/pgdg.list
+        mode: "0644"
+    - name: Update package cache
+      ansible.builtin.apt:
+        update_cache: true
 
 - name: Install needed packages
   ansible.builtin.apt:
@@ -26,5 +27,6 @@
   ansible.builtin.command: "pg_dropcluster --stop {{ postgres_major_version }} {{ postgres_apt_cluster_name }}"
   args:
     removes: "{{ postgres_data_dir }}"
+  changed_when: true
   when: postgres_init_force is defined and postgres_init_force | bool
   tags: postgres_apt,postgres_apt_install

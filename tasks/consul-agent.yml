@@ -1,21 +1,20 @@
 ---
 # Install consul agent on postgres hosts
 # install consul repo and add consul to list of packages on RH-based distros
-- name: Add consul repo 
-  block:
-  - name: Get hashicorp repo into yum.repos.d
-    ansible.builtin.uri:
-      url: 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo'
-      creates: '/etc/yum.repos.d/hashicorp.repo'
-      tags: postgres_dnf_init
-    tags: patroni_install,stolon_install,consul_agent,consul_agent_install
-  - name: Add hashicorp repo
-    ansible.builtin.yum_repository:
-      name: 'hashicorp'
-      state: present
-      enables: true
-    tags: patroni_install,stolon_install,consul_agent,consul_agent_install
+- name: Add consul repo
   when: ansible_pkg_mgr == 'dnf'
+  block:
+    - name: Get hashicorp repo into yum.repos.d
+      ansible.builtin.uri:
+        url: 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo'
+        creates: '/etc/yum.repos.d/hashicorp.repo'
+      tags: postgres_dnf_init,patroni_install,stolon_install,consul_agent,consul_agent_install
+    - name: Add hashicorp repo
+      ansible.builtin.yum_repository:
+        name: 'hashicorp'
+        state: present
+        enabled: true
+      tags: postgres_dnf_init,patroni_install,stolon_install,consul_agent,consul_agent_install
 # You should add repo for consul before execute this playbook
 - name: Iinstall consul package on postgres hosts
   ansible.builtin.package:
@@ -28,5 +27,6 @@
     src: "{{ postgres_templates_dir }}/consul-agent.hcl.j2"
     dest: "{{ postgres_consul_agent_config }}"
     validate: /usr/bin/consul validate "{{ postgres_consul_agent_config }}"
-  notify: consul_agent restart
+    mode: "0644"
+  notify: Consul_agent restart
   tags: consul_agent,consul_agent_config

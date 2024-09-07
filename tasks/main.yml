@@ -18,10 +18,10 @@
 
 - name: Set kernel parameters
   ansible.posix.sysctl:
-    name: "{{ item.name | regex_replace('_','.') }}"
+    name: "{{ item.name | regex_replace('_', '.') }}"
     value: "{{ item.value }}"
     sysctl_set: true
-    state: present 
+    state: present
   loop: "{{ postgres_kernel_params }}"
   tags: postgres_init,postgres_deploy
 

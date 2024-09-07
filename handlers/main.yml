@@ -1,83 +1,81 @@
 ---
-
 # handlers file for postgres
 # single instance
 # start postgres instance
-- name: postgres start
+- name: Postgres start
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: started
 
 # enable postgres instance
-- name: postgres enable
+- name: Postgres enable
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     enabled: true
 
 # restart postgres instance
-- name: postgres restart
+- name: Postgres restart
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: restarted
 
 # reload postgres config
-- name: postgres reload conf
+- name: Postgres reload conf
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: reloaded
 
 # stop postgres instance
-- name: postgres stop
+- name: Postgres stop
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: stopped
 
 # patroni cluster solution
 # start patroni instance
-- name: patroni start
+- name: Patroni start
   ansible.builtin.service:
     name: patroni
     state: started
 
 # restart patroni instance
-- name: patroni restart
+- name: Patroni restart
   ansible.builtin.service:
     name: patroni
     state: restarted
 
 # reload patroni config
-- name: patroni reload conf
+- name: Patroni reload conf
   ansible.builtin.service:
     name: patroni
     state: reloaded
 
 # stop patroni instance
-- name: patroni stop
+- name: Patroni stop
   ansible.builtin.service:
     name: patroni
     state: stopped
 
 # restart stolon-sentinel instance
-- name: stolon-sentinel restart
+- name: Stolon-sentinel restart
   ansible.builtin.service:
     name: stolon-sentinel
     state: restarted
 
 # restart stolon-keeper instance
-- name: stolon-keeper restart
+- name: Stolon-keeper restart
   ansible.builtin.service:
     name: stolon-keeper
     state: restarted
 
 # restart stolon-proxy instance
-- name: stolon-proxy restart
+- name: Stolon-proxy restart
   ansible.builtin.service:
     name: stolon-proxy
     state: restarted
 
 # restart consul-agent instance
-- name: consul_agent restart
+- name: Consul_agent restart
   ansible.builtin.service:
     name: "{{ consul_service_name }}"
     state: restarted
-

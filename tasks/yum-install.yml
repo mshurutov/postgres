@@ -4,7 +4,8 @@
   ansible.builtin.yum:
     name: '*'
     state: latest
-  
+    update_only: true
+
 - name: Install repo
   ansible.builtin.yum:
     name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm

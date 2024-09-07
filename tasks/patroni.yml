@@ -7,7 +7,7 @@
   tags: patroni,patroni_install,patroni_conf,patroni_init,patroni_ssh_keys,patroni_start
 
 - name: Install patroni packages
-  ansible.builtin.package: 
+  ansible.builtin.package:
     name: "{{ item }}"
     state: present
   loop: "{{ patroni_packages }}"
@@ -18,7 +18,7 @@
     path: "{{ patroni_config_dir }}"
     owner: "{{ patroni_user }}"
     group: "{{ patroni_group }}"
-    mode: 0700
+    mode: "0700"
     state: directory
   tags: patroni,patroni_conf
 
@@ -28,26 +28,30 @@
     dest: "{{ patroni_config_file }}"
     owner: "{{ patroni_user }}"
     group: "{{ patroni_group }}"
-    mode: 0600
+    mode: "0600"
   tags: patroni,patroni_conf
 
 - name: Set patroni systemd unit file
-  block:
-  - name: Check if systemd unit files directrory exists
-    ansible.builtin.file:
-      path: "{{ common_systemd_unit_dir }}"
-      state: "directory"
-  - name: Copy patroni systemd unit file into systemd unit files directory
-    ansible.builtin.template:
-      dest: "{{ common_systemd_unit_dir }}/patroni.service"
-      src: "{{ patroni_systemd_unit_template }}"
-  - name: Systemd daemon reload
-    ansible.builtin.systemd_service:
-      daemon_reload: true
   when: ansible_service_mgr == "systemd" and patroni_systemd_unit_template is defined and patroni_systemd_unit_template | length > 0
   tags: patroni,patroni_conf
+  block:
+    - name: Check if systemd unit files directrory exists
+      ansible.builtin.file:
+        path: "{{ common_systemd_unit_dir }}"
+        state: "directory"
+        mode: "0755"
+    - name: Copy patroni systemd unit file into systemd unit files directory
+      ansible.builtin.template:
+        dest: "{{ common_systemd_unit_dir }}/patroni.service"
+        src: "{{ patroni_systemd_unit_template }}"
+        mode: "0644"
+    - name: Systemd daemon reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
 
 - name: Delete exists postgres data directory
+  when: patroni_init_force is defined and patroni_init_force | bool
+  tags: patroni,patroni_init
   block:
     - name: Stop postgresql service
       ansible.builtin.service:
@@ -62,9 +66,7 @@
       ansible.builtin.file:
         path: "{{ postgres_data_dir }}"
         state: absent
-  when: patroni_init_force is defined and patroni_init_force | bool
-  tags: patroni,patroni_init
-  
+
 - name: Setup ssh keys on cluster nodes
   ansible.builtin.import_tasks: "ssh-keys.yml"
   when: ssh_keys_create_force is defined and ssh_keys_create_force | bool
