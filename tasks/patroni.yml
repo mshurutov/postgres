@@ -68,9 +68,12 @@
         state: absent
 
 - name: Setup ssh keys on cluster nodes
-  ansible.builtin.import_tasks: "ssh-keys.yml"
   when: ssh_keys_create_force is defined and ssh_keys_create_force | bool
   tags: patroni,patroni_ssh_keys
+  ansible.builtin.include_role:
+    name: "mshurutov.common"
+    tasks_from: "ssh-keys.yml"
+#  ansible.builtin.import_tasks: "ssh-keys.yml"
 
 - name: Start patroni on master
   ansible.builtin.service:

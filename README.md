@@ -24,7 +24,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Requirements
 ------------
 
-This role requires python v3 because python v2 is out of live.
+This role requires python v3 because python v2 is out of live and ansible-core>=2.13.9.
+Role dependencies:
+  - mshurutov.common
 
 Role Variables
 --------------

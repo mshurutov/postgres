@@ -109,6 +109,10 @@ postgres_hosts_group: "pg_hosts"
 postgres_dcs_groups: "pg_dcs"
 postgres_cluster_dcs: "etcd"
 
+# Follow two variables are defined for clusters
+common_user_sk: "{{ postgres_system_user }}"
+common_sk_hosts_group: "{{ postgres_hosts_group }}"
+
 # distr dependent variables
 # portage - gentoo linux
 # postgres_service_name: "postgresql-{{ postgres_major_version }}"
