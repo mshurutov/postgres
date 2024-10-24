@@ -17,15 +17,20 @@
   tags: postgres_init
 
 - name: Set kernel parameters
+  become: true
+  become_user: root
+  tags: postgres_init,postgres_deploy
   ansible.posix.sysctl:
-    name: "{{ item.name | regex_replace('_', '.') }}"
+    name: "{{ item.name }}"
     value: "{{ item.value }}"
+    sysctl_file: "{{ postgres_sysctl_file | default('/etc/sysctl.d/99-postgres.conf')}}"
     sysctl_set: true
     state: present
   loop: "{{ postgres_kernel_params }}"
-  tags: postgres_init,postgres_deploy
 
 - name: Install lsb-release package
+  become: true
+  become_user: root
   ansible.builtin.package:
     name: "{{ common_lsb_package }}"
     state: present

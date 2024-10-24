@@ -93,7 +93,6 @@ postgres_params_default:
   - { name: log_line_prefix, value: "'%t [%p]: user=%u,db=%d,app=%a,client=%h '" }
   - { name: log_statement, value: "all" }
   - { name: autovacuum_vacuum_scale_factor, value: "0.05" }
-  - { name: autovacuum_vacuum_insert_scale_factor, value: "0.01" }
   - { name: autovacuum_analyze_scale_factor, value: "0.01" }
   - { name: shared_preload_libraries, value: "'pg_stat_statements'" }
   - { name: restart_after_crash, value: "false" }

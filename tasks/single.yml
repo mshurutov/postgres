@@ -9,6 +9,8 @@
 ### Init is destructive procedure if instance of {{ postgres_major_version }}
 ### is jet installed and inited
 - name: Init postgres
+  become: true
+  become_user: root
   tags: postgres_single_init
   when: postgres_init_force is defined and postgres_init_force | bool
   block:
@@ -36,7 +38,6 @@
       when: postgres_init_config is defined and postgres_init_config | length > 0
 # init of instance
     - name: Run initdb command by wrapper
-      when: ansible_service_mgr == "systemd" and pg_systemd_unit is defined and pg_systemd_unit | length > 0
       block:
 # init on non-RedHat-based/like distros
         - name: Simple init command
@@ -52,6 +53,7 @@
           when: ansible_os_family == "RedHat"
 # edit unit-file for postgres systemd service
     - name: Edit postgres systemd unit file
+      when: ansible_service_mgr == "systemd" and pg_systemd_unit is defined and pg_systemd_unit | length > 0
       ansible.builtin.template:
         dest: "/etc/systemd/system/{{ postgres_service_name }}.service.d/override.conf"
         src: "{{ postgres_templates_dir }}/postgres-systemd-unit.service.j2"
@@ -62,6 +64,8 @@
   tags: postgres_config
 
 - name: Postgres start
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: started

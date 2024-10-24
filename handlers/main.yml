@@ -3,30 +3,40 @@
 # single instance
 # start postgres instance
 - name: Postgres start
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: started
 
 # enable postgres instance
 - name: Postgres enable
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     enabled: true
 
 # restart postgres instance
 - name: Postgres restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: restarted
 
 # reload postgres config
 - name: Postgres reload conf
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: reloaded
 
 # stop postgres instance
 - name: Postgres stop
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: stopped
@@ -34,48 +44,64 @@
 # patroni cluster solution
 # start patroni instance
 - name: Patroni start
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: patroni
     state: started
 
 # restart patroni instance
 - name: Patroni restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: patroni
     state: restarted
 
 # reload patroni config
 - name: Patroni reload conf
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: patroni
     state: reloaded
 
 # stop patroni instance
 - name: Patroni stop
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: patroni
     state: stopped
 
 # restart stolon-sentinel instance
 - name: Stolon-sentinel restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: stolon-sentinel
     state: restarted
 
 # restart stolon-keeper instance
 - name: Stolon-keeper restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: stolon-keeper
     state: restarted
 
 # restart stolon-proxy instance
 - name: Stolon-proxy restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: stolon-proxy
     state: restarted
 
 # restart consul-agent instance
 - name: Consul_agent restart
+  become: true
+  become_user: root
   ansible.builtin.service:
     name: "{{ consul_service_name }}"
     state: restarted
