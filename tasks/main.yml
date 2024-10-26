@@ -23,7 +23,7 @@
   ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
-    sysctl_file: "{{ postgres_sysctl_file | default('/etc/sysctl.d/99-postgres.conf')}}"
+    sysctl_file: "{{ postgres_sysctl_file | default('/etc/sysctl.d/99-postgres.conf') }}"
     sysctl_set: true
     state: present
   loop: "{{ postgres_kernel_params }}"

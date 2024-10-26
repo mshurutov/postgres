@@ -9,7 +9,7 @@
       ansible.builtin.file:
         mode: "0700"
         owner: "{{ postgres_system_user }}"
-        path: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d' ) }}"
+        path: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}"
         state: "directory"
     - name: Add include custom config into base
       ansible.builtin.blockinfile:

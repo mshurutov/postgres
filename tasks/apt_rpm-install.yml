@@ -2,24 +2,10 @@
 # PostgreSQL installation on Alt Linux
 # apt is package manager and rpm is package format
 - name: Add repos
-  become: true
-  become_user: root
-  ansible.builtin.template:
-    src: "{{ postgres_templates_dir }}/alt_postgres.list.j2"
-    dest: "/etc/apt/sources.list.d/{{ pgrepo.filename }}.list"
-    mode: "0644"
-  loop: "{{ postgres_apt_repos }}"
-  loop_control:
-    loop_var: pgrepo
-  when: postgres_apt_repos is defined and postgres_apt_repos | length > 0
   tags: alt_install,alt_repos_install
-
-- name: Update package cache
-  become: true
-  become_user: root
-  community.general.apt_rpm:
-    update_cache: true
-  tags: alt_install,alt_postgres_install
+  ansible.builtin.include_role:
+    name: "mshurutov.common"
+    tasks_from: "apt_rpm-repo-add.yml"
 
 - name: Install PostgreSQL
   become: true
@@ -29,11 +15,11 @@
   loop: "{{ postgres_apt_rpm_packages }}"
   tags: alt_install,alt_postgres_install
 
-- name: Set alternatives for pgpro
-  become: true
-  become_user: root
-  ansible.builtin.command:
-    cmd: "{{ postgres_bin_dir }}/pg-wrapper links update"
-  changed_when: true
-  when: postgres_apt_rpm_packages is search("postgrespro")
-  tags: alt_install,alt_pgpro_config
+# - name: Set alternatives for pgpro
+#   become: true
+#   become_user: root
+#   ansible.builtin.command:
+#     cmd: "{{ postgres_bin_dir }}/pg-wrapper links update"
+#   changed_when: true
+#   when: postgres_apt_rpm_packages is search("postgrespro")
+#   tags: alt_install,alt_pgpro_config

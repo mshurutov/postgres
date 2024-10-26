@@ -2,20 +2,9 @@
 # install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
 - name: Add pgdg repo into apt
   tags: postgres_apt,postgres_apt_init
-  block:
-    - name: Add pgdg repo gpg key
-      ansible.builtin.apt_key:
-        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-        state: present
-      # loop: "{{ postgres_apt_gpgkeys }}"
-    - name: Add repo into config file
-      ansible.builtin.template:
-        src: "{{ postgres_templates_apt_dir }}/pgdg.list.j2"
-        dest: /etc/apt/sources.list.d/pgdg.list
-        mode: "0644"
-    - name: Update package cache
-      ansible.builtin.apt:
-        update_cache: true
+  ansible.builtin.include_role:
+    name: "mshurutov.common"
+    tasks_from: "apt-repo-add.yml"
 
 - name: Install needed packages
   ansible.builtin.apt:

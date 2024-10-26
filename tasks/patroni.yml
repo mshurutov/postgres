@@ -73,7 +73,6 @@
   ansible.builtin.include_role:
     name: "mshurutov.common"
     tasks_from: "ssh-keys.yml"
-#  ansible.builtin.import_tasks: "ssh-keys.yml"
 
 - name: Start patroni on master
   ansible.builtin.service:
