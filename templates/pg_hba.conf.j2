@@ -1,0 +1,6 @@
+# pg_hba.conf. for info about format this file see documentation:
+# https://www.postgresql.org/docs/{{ postgres_major_version }}/auth-pg-hba-conf.html
+
+{% for line in postgres_pg_hba_lines %}
+{{ line }}
+{% endfor %}

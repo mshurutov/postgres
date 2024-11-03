@@ -1,0 +1,7 @@
+# Custom PostgresQL config file
+# For options in this file see:
+# https://www.postgresql.org/docs/{{ postgres_major_version }}/runtime-config.html
+
+{% for item in postgres_params %}
+{{ item.name }} = {{ item.value }}
+{% endfor %}

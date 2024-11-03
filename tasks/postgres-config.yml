@@ -22,57 +22,56 @@
         owner: "{{ postgres_system_user }}"
         path: "{{ postgres_conf_file }}"
     - name: Configure postgres by custom config
-      ansible.builtin.blockinfile:
-        block: |
-          # Custom settings for Postgres
-          {% for item in postgres_params %}
-          {{ item.name }} = {{ item.value }}
-          {% endfor %}
-        create: true
-        insertafter: "EOF"
+      ansible.builtin.template:
+        dest: "{{ postgres_custom_config_dir | default(postgres_conf_dir) }}/{{ postgres_custom_config_file }}"
+        src: "{{ postgres_templates_dir }}/postgresql_conf.j2"
         mode: "0600"
         owner: "{{ postgres_system_user }}"
-        path: "{{ postgres_custom_config_dir | default(postgres_conf_dir) }}/{{ postgres_custom_config_file }}"
       notify: Postgres restart
 
 - name: Check if installed version of pg_hba.conf exists
   become: true
   become_user: "{{ postgres_system_user }}"
+  tags: postgres_config,pg_hba_conf
   ansible.builtin.stat:
     path: "{{ postgres_conf_dir }}/pg_hba.conf.install"
   register: pg_hba_conf_exist
-  tags: postgres_config,pg_hba_conf
 
 - name: Backup installed version of pg_hba.conf
   become: true
   become_user: "{{ postgres_system_user }}"
+  when: not pg_hba_conf_exist.stat.exists
+  tags: postgres_config,pg_hba_conf
   ansible.builtin.copy:
     dest: "{{ postgres_conf_dir }}/pg_hba.conf.install"
     src: "{{ postgres_conf_dir }}/pg_hba.conf"
     remote_src: true
     mode: preserve
-  when: not pg_hba_conf_exist.stat.exists
-  tags: postgres_config,pg_hba_conf
 
-- name: Delete all presettings in pg_hba.conf
+- name: Create pg_hba.conf from template
   become: true
   become_user: "{{ postgres_system_user }}"
-  ansible.builtin.lineinfile:
-    path: "{{ postgres_conf_dir }}/pg_hba.conf"
-    regexp: '^(local|host).*$'
-    state: absent
   tags: postgres_config,pg_hba_conf
-
-- name: Add prepared lines into pg_hba.conf
-  become: true
-  become_user: "{{ postgres_system_user }}"
-  ansible.builtin.lineinfile:
-    path: "{{ postgres_conf_dir }}/pg_hba.conf"
-    line: "{{ item }}"
-    create: true
-    state: present
-    insertafter: EOF
+  ansible.builtin.template:
+    dest: "{{ postgres_conf_dir }}/pg_hba.conf"
     mode: "0600"
-  loop: "{{ postgres_pg_hba_lines }}"
+    src: "{{ postgres_templates_dir }}/pg_hba_conf.j2"
   notify: Postgres reload conf
+
+- name: Add users maps into pg_ident.conf
+  become: true
+  become_user: "{{ postgres_system_user }}"
+  when: postgres_users_maps is defined and postgres_users_maps | length > 0
   tags: postgres_config,pg_hba_conf
+  ansible.builtin.blockinfile:
+    block: |
+      # Custom settings for User maps in Postgres
+      {% for map in postgres_users_maps %}
+      {{ map }}
+      {% endfor %}
+    create: true
+    insertafter: "EOF"
+    mode: "0600"
+    owner: "{{ postgres_system_user }}"
+    path: "{{ postgres_conf_dir }}/pg_ident.conf"
+  notify: Postgres reload conf
