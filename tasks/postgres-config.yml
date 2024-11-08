@@ -55,7 +55,7 @@
   ansible.builtin.template:
     dest: "{{ postgres_conf_dir }}/pg_hba.conf"
     mode: "0600"
-    src: "{{ postgres_templates_dir }}/pg_hba_conf.j2"
+    src: "{{ postgres_templates_dir }}/pg_hba.conf.j2"
   notify: Postgres reload conf
 
 - name: Add users maps into pg_ident.conf
