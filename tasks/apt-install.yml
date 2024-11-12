@@ -1,18 +1,24 @@
 ---
 # install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
 - name: Add pgdg repo into apt
+  become: true
+  become_user: root
   tags: postgres_apt,postgres_apt_init
   ansible.builtin.include_role:
     name: "mshurutov.common"
     tasks_from: "apt-repo-add.yml"
 
 - name: Install needed packages
+  become: true
+  become_user: root
   ansible.builtin.apt:
     name: "{{ postgres_apt_packages }}"
     state: present
   tags: postgres_apt,postgres_apt_install
 
 - name: Remove created cluster
+  become: true
+  become_user: root
   ansible.builtin.command: "pg_dropcluster --stop {{ postgres_major_version }} {{ postgres_apt_cluster_name }}"
   args:
     removes: "{{ postgres_data_dir }}"
