@@ -11,13 +11,13 @@ postgres_install_mode: "single"
 # any packages
 postgres_consul_agent_packages: "consul"
 # files, directories and any names
-postgres_home_dir: "/var/lib/postgresql"
+postgres_home_dir: # postgres_{{ ansible_pkg_mgr }}_home_dir
 postgres_pgpass_file: "{{ postgres_home_dir }}/.pgpass"
-postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
+postgres_conf_dir: # postgres_{{ ansible_pkg_mgr }}_conf_dir
 postgres_conf_file: "{{ postgres_conf_dir }}/postgresql.conf"
-postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
-postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
-postgres_service_name: "postgresql-{{ postgres_major_version }}"
+postgres_data_dir: # postgres_{{ ansible_pkg_mgr }}_data_dir
+postgres_bin_dir: # postgres_{{ ansible_pkg_mgr }}_bin_dir
+postgres_service_name: # postgres_{{ ansible_pkg_mgr }}_service_name
 # postgres_init_command is distro depended command and should be defined for your distro
 # postgres_init_command:
 # postgres_init_env is used only on dnf-based distros
@@ -75,9 +75,9 @@ postgres_params_default:
   - { name: password_encryption, value: "{{ postgres_password_encoding }}"}
   - { name: lc_messages, value: "en_US.UTF-8" }
   - { name: shared_buffers, value: "{{ (ansible_memtotal_mb / 4096 + 1) | int }}GB" }
+  - { name: effective_cache_size, value: "{{ (ansible_memtotal_mb / 2048 + 1) | int }}GB" }
   - { name: work_mem, value: "16MB" }
   - { name: maintenance_work_mem, value: "1GB" }
-  - { name: effective_cache_size, value: "{{ (ansible_memtotal_mb / 2048 + 1) | int }}GB" }
   - { name: wal_level, value: "replica" }
   - { name: archive_mode, value: "on" }
   - { name: archive_command, value: "'/bin/true'" }
@@ -88,6 +88,7 @@ postgres_params_default:
   - { name: logging_collector, value: "on" }
   - { name: log_file_mode, value: "0640" }
   - { name: log_line_prefix, value: "'%t [%p]: user=%u,db=%d,app=%a,client=%h '" }
+  - { name: log_truncate_on_rotation, value: "on" }
   - { name: autovacuum_vacuum_scale_factor, value: "0.05" }
   - { name: autovacuum_analyze_scale_factor, value: "0.01" }
   - { name: shared_preload_libraries, value: "'pg_stat_statements'" }
@@ -110,22 +111,24 @@ common_sk_hosts_group: "{{ postgres_hosts_group }}"
 
 # distr dependent variables
 # portage - gentoo linux
-# postgres_service_name: "postgresql-{{ postgres_major_version }}"
-# postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
-# postgres_home_dir: "/var/lib/postgresql"
-# postgres_data_dir: "{{ postgres_portage_home_dir }}/{{ postgres_major_version }}/data"
-# postgres_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
+postgres_portage_service_name: "postgresql-{{ postgres_major_version }}"
+postgres_portage_conf_dir: "/etc/postgresql/{{ postgres_major_version }}"
+postgres_portage_home_dir: "/var/lib/postgresql"
+postgres_portage_data_dir: "{{ postgres_portage_home_dir }}/{{ postgres_major_version }}/data"
+postgres_portage_bin_dir: "/usr/lib64/postgresql-{{ postgres_major_version }}/bin"
 portage_accept_keywords_file: "/etc/portage/package.accept_keywords/package.all"
 postgres_portage_packages: "dev-db/postgresql:{{ postgres_major_version }}"
 postgres_portage_confd:
 
 # APT variables (Debian, [KLX]?Ubuntu, Mint, and other deb-based distros)
 postgres_apt_cluster_name: "main"
-# postgres_service_name: "postgresql"
-# postgres_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/main"
-# postgres_home_dir: "/var/lib/postgresql"
-# postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
-# postgres_bin_dir: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
+postgres_apt_service_name: "postgresql"
+postgres_apt_conf_dir: "/etc/postgresql/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
+postgres_apt_common_custom_conf_dir: "/etc/postgresql-common/createcluster.d"
+postgres_apt_common_config: "/etc/postgresql-common/createcluster.conf"
+postgres_apt_home_dir: "/var/lib/postgresql"
+postgres_apt_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
+postgres_apt_bin_dir: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
 postgres_apt_packages:
   - "postgresql-{{ postgres_major_version }}"
   - "postgresql-contrib"
@@ -143,12 +146,12 @@ patroni_apt_rpm_packages:
   - "patroni"
 
 # YUM/DNF (RedHat, CentOS, Rocky, Oracle)
-# postgres_service_name: "postgresql-{{ postgres_major_version }}"
-# postgres_home_dir: "/var/lib/pgsql"
-# postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
-# postgres_conf_dir: "{{ postgres_data_dir }}"
-# postgres_bin_dir: "/usr/pgsql-{{ postgres_major_version }}/bin"
-postgres_yum_packages:
+postgres_dnf_service_name: "postgresql-{{ postgres_major_version }}"
+postgres_dnf_home_dir: "/var/lib/pgsql"
+postgres_dnf_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/data"
+postgres_dnf_conf_dir: "{{ postgres_data_dir }}"
+postgres_dnf_bin_dir: "/usr/pgsql-{{ postgres_major_version }}/bin"
+postgres_dnf_yum_packages:
   - "postgresql{{ postgres_major_version }}-server"
   - "postgresql{{ postgres_major_version }}-contrib"
   - "python3-psycopg2"

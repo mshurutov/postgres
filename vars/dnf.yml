@@ -1,0 +1,8 @@
+---
+# Set dnf dependent variables
+# files, directories and any names
+postgres_home_dir: "{{ postgres_dnf_home_dir }}"
+postgres_conf_dir: "{{ postgres_dnf_conf_dir }}"
+postgres_data_dir: "{{ postgres_dnf_data_dir }}"
+postgres_bin_dir: "{{ postgres_dnf_bin_dir }}"
+postgres_service_name: "{{ postgres_dnf_service_name }}"

@@ -1,46 +1,30 @@
 ---
 # set replica mode for single host
-- name: Set any variables
-  ansible.builtin.include_vars:
-    file: "{{ postgres_vars_dir }}/single.yml"
-
 - name: Check if postgres stopped
+  tags: replica_init,replica_prepare
   ansible.builtin.service:
     name: "{{ postgres_service_name }}"
     state: stopped
-  tags: replica_init
 
 - name: Delete PGDATA dir
+  tags: replica_init,replica_prepare
   ansible.builtin.file:
     path: "{{ postgres_data_dir }}"
     state: absent
-  tags: replica_init
 
 - name: Init postgres for distros where postgres_conf_dir != postgres_data_dir
-  when: replica_init_force is defined and replica_init_force | bool
+  when: postgres_conf_dir != postgres_data_dir and replica_init_force is defined and replica_init_force | bool
+  tags: replica_init,replica_prepare
   block:
     - name: Init PG
       ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-single-init.yml"
-      tags: replica_init
     - name: Delete PGDATA dir
       ansible.builtin.file:
         path: "{{ postgres_data_dir }}"
         state: absent
-      tags: replica_init
-
-- name: Add replica user into ~/.pgpass file of sysuser postgres
-  ansible.builtin.lineinfile:
-    path: "{{ postgres_home_dir }}/.pgpass"
-    line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
-    owner: "{{ postgres_system_user }}"
-    group: "{{ postgres_system_user }}"
-    mode: "0600"
-    create: true
-    state: "present"
-  tags: replica_init
 
 - name: Copy backup to host
-  tags: replica_init
+  tags: replica_init,replica_create
   block:
     - name: Create basebackup from master host
       become: true
@@ -57,11 +41,12 @@
 
 - name: Edit configs
   ansible.builtin.import_tasks: "postgres-config.yml"
-  tags: replica_init
+  tags: replica_init,replica_config
 
 - name: Configure replica
   become: true
   become_user: "{{ postgres_system_user }}"
+  tags: replica_init,replica_start
   ansible.builtin.lineinfile:
     path: "{{ postgres_conf_dir }}/{{ postgres_recovery_conf }}"
     regexp: '^#?\s*{{ item.name }}[^#]*(\s*#?.*)$'
@@ -72,4 +57,3 @@
     mode: "0600"
   loop: "{{ postgres_recovery_params }}"
   notify: Postgres start
-  tags: replica_init,postgres_start

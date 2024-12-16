@@ -1,18 +1,6 @@
 ---
 # Main config for patroni+any DCS cluster
-# any DCS variables must be defined
-- name: Set any variables
-  ansible.builtin.include_vars:
-    file: "{{ postgres_vars_dir }}/cluster.yml"
-  tags: patroni,patroni_install,patroni_conf,patroni_init,patroni_ssh_keys,patroni_start
-
-- name: Install patroni packages
-  ansible.builtin.package:
-    name: "{{ item }}"
-    state: present
-  loop: "{{ patroni_packages }}"
-  tags: patroni,patroni_install
-
+# install packages must be defined in {{ ansible_pkg_mgr }}-install.yml playbook
 - name: Check if config dir exists
   ansible.builtin.file:
     path: "{{ patroni_config_dir }}"
@@ -69,7 +57,7 @@
 
 - name: Setup ssh keys on cluster nodes
   when: ssh_keys_create_force is defined and ssh_keys_create_force | bool
-  tags: patroni,patroni_ssh_keys
+  tags: patroni,ssh_keys
   ansible.builtin.include_role:
     name: "mshurutov.common"
     tasks_from: "ssh-keys.yml"

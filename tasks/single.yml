@@ -1,11 +1,5 @@
 ---
 ### Init, configure and start single postgres
-# Set variables for single mode
-- name: Set any variables
-  ansible.builtin.include_vars:
-    file: "{{ postgres_vars_dir }}/single.yml"
-  tags: postgres_single_init,postgres_config
-
 ### Init is destructive procedure if instance of {{ postgres_major_version }}
 ### is jet installed and inited
 - name: Init postgres

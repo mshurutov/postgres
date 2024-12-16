@@ -12,6 +12,7 @@
   become_user: root
   community.general.apt_rpm:
     package: "{{ item }}"
+    state: "present_not_latest"
   loop: "{{ postgres_apt_rpm_packages }}"
   tags: alt_install,alt_postgres_install
 

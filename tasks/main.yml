@@ -11,10 +11,28 @@
 
 # tasks file for postgres
 # set any variables
-- name: Set distro independent base variables
-  ansible.builtin.include_vars:
-    file: "{{ postgres_vars_dir }}/main.yml"
-  tags: postgres_init
+- name: Set variables
+  block:
+    - name: Set mode and package manager independent variables
+      tags: postgres_init,postgres_install,postgres_deploy
+      ansible.builtin.include_vars:
+        file: "{{ postgres_vars_dir }}/main.yml"
+    - name: Set package manager dependent variables
+      tags: postgres_init,postgres_install,postgres_deploy
+      ansible.builtin.include_vars:
+        file: "{{ postgres_vars_dir }}/{{ ansible_pkg_mgr }}.yml"
+# Set variables for single and replica mode
+    - name: Set any variables
+      when: postgres_install_mode == "single" or postgres_install_mode == "replica"
+      tags: postgres_init,postgres_install,postgres_deploy
+      ansible.builtin.include_vars:
+        file: "{{ postgres_vars_dir }}/single.yml"
+# Set variables for any cluster mode
+    - name: Set any variables
+      when: postgres_install_mode != "single" and postgres_install_mode != "replica"
+      tags: postgres_init,postgres_install,postgres_deploy
+      ansible.builtin.include_vars:
+        file: "{{ postgres_vars_dir }}/cluster.yml"
 
 - name: Set kernel parameters
   become: true
@@ -31,11 +49,20 @@
 - name: Install lsb-release package
   become: true
   become_user: root
-  ansible.builtin.package:
-    name: "{{ common_lsb_package }}"
-    state: present
   tags: postgres_install
+  block:
+    - name: Install package on non-Alt linux systems
+      when: ansible_pkg_mgr != "apt_rpm"
+      ansible.builtin.package:
+        name: "{{ common_lsb_package }}"
+        state: "present"
+    - name: Install package on Alt linux systems
+      when: ansible_pkg_mgr == "apt_rpm"
+      community.general.apt_rpm:
+        name: "{{ common_lsb_package }}"
+        state: "present_not_latest"
 
+# All packages for every mode must be installed by this playbooks
 - name: Install postgres
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"
   tags: postgres_install

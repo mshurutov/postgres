@@ -1,18 +1,13 @@
 ---
 # Tasks for create stolon PostgreSQL cluster
-- name: Set any common variables
-  ansible.builtin.include_vars:
-    file: "{{ postgres_vars_dir }}/cluster.yml"
-  tags: postgres_cluster,stolon_init,stolon_config,stolon_create
-
 - name: Set any stolon variables
   ansible.builtin.include_vars:
     file: "{{ postgres_vars_dir }}/stolon.yml"
   tags: postgres_cluster,stolon_init,stolon_config,stolon_create
 
-- name: Install stolon packages
-  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-stolon-install.yml"
-  tags: stolon,stolon_install
+# - name: Install stolon packages
+#   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-stolon-install.yml"
+#   tags: stolon,stolon_install
 
 - name: Set parameters for stolon daemons
   ansible.builtin.template:

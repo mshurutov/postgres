@@ -1,5 +1,18 @@
 ---
 # configure postgres
+- name: Add replica user into ~/.pgpass file of sysuser postgres
+  become: true
+  become_user: "{{ postgres_system_user }}"
+  ansible.builtin.lineinfile:
+    path: "{{ postgres_home_dir }}/.pgpass"
+    line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
+    owner: "{{ postgres_system_user }}"
+    group: "{{ postgres_system_user }}"
+    mode: "0600"
+    create: true
+    state: "present"
+  tags: postgres_config,pgpass
+
 - name: Edit postgresql.conf
   become: true
   become_user: "{{ postgres_system_user }}"

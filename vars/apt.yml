@@ -1,0 +1,8 @@
+---
+# Set apt dependent variables
+# files, directories and any names
+postgres_home_dir: "{{ postgres_apt_home_dir }}"
+postgres_conf_dir: "{{ postgres_apt_conf_dir }}"
+postgres_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
+postgres_bin_dir: "{{ postgres_apt_bin_dir }}"
+postgres_service_name: "{{ postgres_apt_service_nam }}"
