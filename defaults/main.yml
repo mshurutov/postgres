@@ -142,6 +142,11 @@ stolon_apt_packages:
   - "stolon"
 
 # APT+RPM (Alt Linux)
+postgres_apt_rpm_home_dir: "/var/lib/pgsql"
+postgres_apt_rpm_conf_dir: "{{ postgres_apt_rpm_home_dir }}/data"
+postgres_apt_rpm_data_dir: "{{ postgres_apt_rpm_home_dir }}/data"
+postgres_apt_rpm_bin_dir: "/usr"
+postgres_apt_rpm_service_name: "postgresql.service"
 patroni_apt_rpm_packages:
   - "patroni"
 
