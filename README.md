@@ -70,20 +70,20 @@ Install role
 Deploy postgres using this role
 ------------
 
-On every case you must set OS-depended variables:
+On every case you can set OS-depended variables:
 
-* `postgres_home_dir` is home directory of system user owner of instance;
-* `postgres_conf_dir` is directory where config files are placed;
-* `postgres_data_dir` is $PGDATA directory;
-* `postgres_bin_dir` is directory where executable files is placed by package manager;
-* `postgres_service_name` is systemd service name of postgres.
+* `postgres_{{ ansible_pkg_mgr }}_home_dir` is home directory of system user owner of instance;
+* `postgres_{{ ansible_pkg_mgr }}_conf_dir` is directory where config files are placed;
+* `postgres_{{ ansible_pkg_mgr }}_data_dir` is $PGDATA directory;
+* `postgres_{{ ansible_pkg_mgr }}_bin_dir` is directory where executable files is placed by package manager;
+* `postgres_{{ ansible_pkg_mgr }}_service_name` is systemd service name of postgres.
 
-Default values are set for Gentoo Linux.
+Where `ansible_pkg_mgr` is one from `apt`,`dnf`,`apt_rpm` (for Alt Linux), `portage`.
 
 ### Setup single instance
 #### Set role variables
 
-You may need set `postgres_major_version` only in this mode. Default value of this variable is `14`.
+You may need set `postgres_major_version` only in this mode. Default value of this variable is `16`.
 
 #### Playbook example
 

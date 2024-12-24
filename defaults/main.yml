@@ -6,7 +6,7 @@ postgres_templates_dir: "{{ role_path }}/templates"
 postgres_vars_dir: "{{ role_path }}/vars"
 postgres_files_dir: "{{ role_path }}/files"
 # common postgres variables
-postgres_major_version: 14
+postgres_major_version: 16
 postgres_install_mode: "single"
 # any packages
 postgres_consul_agent_packages: "consul"
