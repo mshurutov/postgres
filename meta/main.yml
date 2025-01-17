@@ -1,9 +1,9 @@
 galaxy_info:
   role_name: 'postgres'
   author: 'Mikhail Shurutov'
-  namespace: 'mshurutov'
   company: 'I am freelance artist'
-  description: postgres is multifunctional (single, replica, HA-clusters) role of PostgreSQL.
+  description: 'postgres is multifunctional (single, replica, HA-clusters) role of PostgreSQL.'
+  namespace: 'mshurutov'
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
