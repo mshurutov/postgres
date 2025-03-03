@@ -13,34 +13,50 @@
     state: "present"
   tags: postgres_config,pgpass
 
-- name: Edit postgresql.conf
+- name: Configure postgres
   become: true
   become_user: "{{ postgres_system_user }}"
   tags: postgres_config,postgresql_conf
   block:
-    - name: Check if custom config dir exists
-      ansible.builtin.file:
-        mode: "0700"
-        owner: "{{ postgres_system_user }}"
-        path: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}"
-        state: "directory"
-    - name: Add include custom config into base
+    - name: Configure by edit postgresql.conf
+      when: not postgres_custom_config_file is defined or postgres_custom_config_file | length = 0
       ansible.builtin.blockinfile:
         block: |
           # Include custom settings
-          include = '{{ postgres_custom_config_file }}'
+          {% for item in postgres_params %}
+          {{ item.name }} = {{ item.value }}
+          {% endfor %}
         create: true
         insertafter: "EOF"
         mode: "0600"
         owner: "{{ postgres_system_user }}"
         path: "{{ postgres_conf_file }}"
-    - name: Configure postgres by custom config
-      ansible.builtin.template:
-        dest: "{{ postgres_custom_config_dir | default(postgres_conf_dir) }}/{{ postgres_custom_config_file }}"
-        src: "{{ postgres_templates_dir }}/postgresql_conf.j2"
-        mode: "0600"
-        owner: "{{ postgres_system_user }}"
-      notify: Postgres restart
+    - name: Configure by custom config
+      when: postgres_custom_config_file is defined and postgres_custom_config_file | length > 0
+      block:
+        - name: Check if custom config dir exists
+          ansible.builtin.file:
+            mode: "0700"
+            owner: "{{ postgres_system_user }}"
+            path: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}"
+            state: "directory"
+        - name: Add include custom config into base
+          ansible.builtin.blockinfile:
+            block: |
+              # Include custom settings
+              include = '{{ postgres_custom_config_file }}'
+            create: true
+            insertafter: "EOF"
+            mode: "0600"
+            owner: "{{ postgres_system_user }}"
+            path: "{{ postgres_conf_file }}"
+        - name: Configure postgres by custom config
+          ansible.builtin.template:
+            dest: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}/{{ postgres_custom_config_file }}"
+            src: "{{ postgres_templates_dir }}/postgresql_conf.j2"
+            mode: "0600"
+            owner: "{{ postgres_system_user }}"
+          notify: Postgres restart
 
 - name: Check if installed version of pg_hba.conf exists
   become: true
