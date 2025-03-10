@@ -46,22 +46,6 @@
     state: present
   loop: "{{ postgres_kernel_params }}"
 
-- name: Install lsb-release package
-  become: true
-  become_user: root
-  tags: postgres_install
-  block:
-    - name: Install package on non-Alt linux systems
-      when: ansible_pkg_mgr != "apt_rpm"
-      ansible.builtin.package:
-        name: "{{ common_lsb_package }}"
-        state: "present"
-    - name: Install package on Alt linux systems
-      when: ansible_pkg_mgr == "apt_rpm"
-      community.general.apt_rpm:
-        name: "{{ common_lsb_package }}"
-        state: "present_not_latest"
-
 # All packages for every mode must be installed by this playbooks
 - name: Install postgres
   ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}-install.yml"

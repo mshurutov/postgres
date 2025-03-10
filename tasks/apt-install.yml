@@ -1,8 +1,8 @@
 ---
 # install postgres on deb-based systems (Debian, [KLX]Ubuntu, Mint, etc)
 - name: Add pgdg repo into apt
-  become: true 
-  become_user: root 
+#  become: true 
+#  become_user: root 
   tags: postgres_apt,postgres_apt_init
   ansible.builtin.include_role:
     name: "mshurutov.common"

@@ -19,7 +19,7 @@
   tags: postgres_config,postgresql_conf
   block:
     - name: Configure by edit postgresql.conf
-      when: not postgres_custom_config_file is defined or postgres_custom_config_file | length = 0
+      when: not postgres_custom_config_file is defined or postgres_custom_config_file | length == 0
       ansible.builtin.blockinfile:
         block: |
           # Include custom settings
@@ -44,7 +44,7 @@
           ansible.builtin.blockinfile:
             block: |
               # Include custom settings
-              include = '{{ postgres_custom_config_file }}'
+              include = '{{ postgres_custom_config_dir | default('conf.d') }}/{{ postgres_custom_config_file }}'
             create: true
             insertafter: "EOF"
             mode: "0600"

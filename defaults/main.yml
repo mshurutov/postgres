@@ -130,6 +130,8 @@ postgres_apt_home_dir: "/var/lib/postgresql"
 postgres_apt_data_dir: "{{ postgres_home_dir }}/{{ postgres_major_version }}/{{ postgres_apt_cluster_name }}"
 postgres_apt_bin_dir: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
 postgres_apt_packages:
+  - "acl"
+  - "lsb-release"
   - "postgresql-{{ postgres_major_version }}"
   - "postgresql-contrib"
   - "python3-psycopg2"
@@ -147,6 +149,8 @@ postgres_apt_rpm_conf_dir: "{{ postgres_apt_rpm_home_dir }}/data"
 postgres_apt_rpm_data_dir: "{{ postgres_apt_rpm_home_dir }}/data"
 postgres_apt_rpm_bin_dir: "/usr"
 postgres_apt_rpm_service_name: "postgresql.service"
+postgres_apt_rpm_packages:
+  - "postgresql{{ postgres_major_version }}-server"
 patroni_apt_rpm_packages:
   - "patroni"
 
@@ -162,10 +166,6 @@ postgres_dnf_yum_packages:
   - "python3-psycopg2"
 patroni_yum_packages:
   - "patroni-etcd"
-
-# apt+rpm package manager of Alt Linux
-postgres_apt_rpm_packages:
-  - "postgresql{{ postgres_major_version }}-server"
 
 # Cluster dependent variables
 # dcs
