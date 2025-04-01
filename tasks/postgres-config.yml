@@ -3,15 +3,17 @@
 - name: Add replica user into ~/.pgpass file of sysuser postgres
   become: true
   become_user: "{{ postgres_system_user }}"
+  when: item.is_in_pgpass is defined and item.is_in_pgpass | bool
+  tags: postgres_config,pgpass
   ansible.builtin.lineinfile:
     path: "{{ postgres_home_dir }}/.pgpass"
-    line: "*:*:*:{{ postgres_repl_user }}:{{ postgres_repl_password }}"
+    line: "*:*:*:{{ item.name }}:{{ item.password }}"
     owner: "{{ postgres_system_user }}"
     group: "{{ postgres_system_user }}"
     mode: "0600"
     create: true
     state: "present"
-  tags: postgres_config,pgpass
+  loop: "{{ postgres_users }}"
 
 - name: Configure postgres
   become: true
@@ -38,7 +40,7 @@
           ansible.builtin.file:
             mode: "0700"
             owner: "{{ postgres_system_user }}"
-            path: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}"
+            path: "{{ postgres_conf_dir }}/{{ postgres_custom_config_dir | default('conf.d') }}"
             state: "directory"
         - name: Add include custom config into base
           ansible.builtin.blockinfile:
@@ -52,7 +54,7 @@
             path: "{{ postgres_conf_file }}"
         - name: Configure postgres by custom config
           ansible.builtin.template:
-            dest: "{{ postgres_custom_config_dir | default(postgres_conf_dir + '/conf.d') }}/{{ postgres_custom_config_file }}"
+            dest: "{{ postgres_conf_dir }}/{{ postgres_custom_config_dir | default('conf.d') }}/{{ postgres_custom_config_file }}"
             src: "{{ postgres_templates_dir }}/postgresql_conf.j2"
             mode: "0600"
             owner: "{{ postgres_system_user }}"
